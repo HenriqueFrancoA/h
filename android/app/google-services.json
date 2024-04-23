@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "175574695515",
+    "project_id": "h-mobile-29d9b",
+    "storage_bucket": "h-mobile-29d9b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:175574695515:android:85afcedc3b2ea57cd6497e",
+        "android_client_info": {
+          "package_name": "br.com.henrique.h"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDyQoqQi1QDJDAr8Bm-14ka3QP-RslBJf8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
