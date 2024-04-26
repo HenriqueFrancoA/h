@@ -257,7 +257,7 @@ class _CadastroScreenState extends State<CadastroScreen> {
                                 ),
                               );
                               userController
-                                  .criarUsuario(
+                                  .criar(
                                 emailController.text,
                                 usuarioController.text,
                                 senhaController.text,

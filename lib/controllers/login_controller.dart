@@ -6,14 +6,14 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:h/apis/usuario_api.dart';
-import 'package:h/controllers/internet_controller.dart';
+import 'package:h/utils/internet_controller.dart';
 import 'package:h/models/usuario.dart';
 import 'package:h/utils/notification_snack_bar.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginController extends GetxController {
-  final internetController = Get.put(InternetController());
+  final _internetController = Internet();
 
   RxList<Usuario> usuarioLogado = RxList<Usuario>();
 
@@ -23,7 +23,9 @@ class LoginController extends GetxController {
   RxBool imgCapaAtualizada = RxBool(false);
   RxBool imgUsuarioAtualizada = RxBool(false);
 
-  late Reference storageRef;
+  late Reference _storageRef;
+
+  final UsuarioApi _usuarioApi = UsuarioApi();
 
   carregarImagens() async {
     try {
@@ -41,9 +43,9 @@ class LoginController extends GetxController {
         imagemCapa.value = '';
 
         ref = 'capa/${usuarioLogado.first.id!}.jpeg';
-        storageRef = FirebaseStorage.instance.ref().child(ref);
+        _storageRef = FirebaseStorage.instance.ref().child(ref);
 
-        Uint8List? capaData = await storageRef.getData();
+        Uint8List? capaData = await _storageRef.getData();
 
         String capaFileName = 'capa_${DateTime.now()}.jpeg';
         String capaFilePath = '$storagePath/$capaFileName';
@@ -72,9 +74,9 @@ class LoginController extends GetxController {
         imagemUsuario.value = '';
 
         ref = 'usuario/${usuarioLogado.first.id!}.jpeg';
-        storageRef = FirebaseStorage.instance.ref().child(ref);
+        _storageRef = FirebaseStorage.instance.ref().child(ref);
 
-        Uint8List? usuarioData = await storageRef.getData();
+        Uint8List? usuarioData = await _storageRef.getData();
 
         String usuarioFileName = 'usuario_${DateTime.now()}.jpeg';
         String usuarioFilePath = '$storagePath/$usuarioFileName';
@@ -109,7 +111,8 @@ class LoginController extends GetxController {
     String senhaUser,
     BuildContext? context,
   ) async {
-    if (context != null && !await internetController.verificaConexao(context)) {
+    if (context != null &&
+        !await _internetController.verificaConexao(context)) {
       return false;
     }
     try {
@@ -117,7 +120,7 @@ class LoginController extends GetxController {
       final usu = await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: emailUser, password: senhaUser);
       if (usu.user != null) {
-        Usuario user = await UsuarioApi.buscaPorUId(usu.user!.uid);
+        Usuario user = await _usuarioApi.buscaPorUId(usu.user!.uid);
 
         await SharedPreferences.getInstance().then((prefs) {
           prefs.setBool('salvarAcesso', true);

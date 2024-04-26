@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'dart:ui';
 
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -8,6 +10,8 @@ import 'package:get/get.dart';
 import 'package:h/components/bottom_bar_component.dart';
 import 'package:h/controllers/login_controller.dart';
 import 'package:h/controllers/publicacao_controller.dart';
+import 'package:h/controllers/relacao_controller.dart';
+import 'package:h/models/usuario.dart';
 import 'package:h/screens/perfil/editar_perfil_screen.dart';
 import 'package:h/utils/text_utils.dart';
 import 'package:h/components/button_components.dart';
@@ -23,26 +27,102 @@ class PerfilScreen extends StatefulWidget {
 }
 
 class _PerfilScreenState extends State<PerfilScreen> {
+  final usuario = Get.arguments['usuario'] as Usuario?;
+
   RxBool mostrarBarra = RxBool(true);
   RxBool scrollable = RxBool(false);
   RxBool editarPerfil = RxBool(false);
+  RxBool seguindo = RxBool(false);
 
   double scrollPosition = 0.0;
   double prevScrollPosition = 0.0;
 
   ScrollController scrollController = ScrollController();
 
-  final loginController = Get.put(LoginController());
   final publicacaoController = Get.put(PublicacaoController());
+  final relacaoController = Get.put(RelacaoController());
+  final loginController = Get.put(LoginController());
 
   final dateFormat = DateFormat('dd MMMM yyyy');
 
   GlobalKey lastProfileWidgetKey = GlobalKey();
+  Usuario? usuarioPerfil;
+
+  late Reference storageRef;
+
+  late RxString imgCapaURL = ''.obs;
+  late RxString imgUsuarioURL = ''.obs;
 
   @override
   void initState() {
     scrollController.addListener(scrollListener);
     super.initState();
+
+    if (usuario != null) {
+      usuarioPerfil = Usuario(
+        id: usuario!.id,
+        uId: usuario!.uId,
+        email: usuario!.email,
+        usuario: usuario!.usuario,
+        senha: usuario!.senha,
+        biografia: usuario!.biografia,
+        localizacao: usuario!.localizacao,
+        telefone: usuario!.telefone,
+        dataNascimento: usuario!.dataNascimento,
+        dataCriacao: usuario!.dataCriacao,
+        seguidores: usuario!.seguidores,
+        seguindo: usuario!.seguindo,
+        imagemUsuario: usuario!.imagemUsuario,
+        imagemUsuarioAtualizado: usuario!.imagemUsuarioAtualizado,
+        imagemCapa: usuario!.imagemCapa,
+        imagemCapaAtualizado: usuario!.imagemCapaAtualizado,
+      );
+      baixarImagens();
+      verificarSeguir();
+    } else {
+      usuarioPerfil = Usuario(
+        id: loginController.usuarioLogado.first.id,
+        uId: loginController.usuarioLogado.first.uId,
+        email: loginController.usuarioLogado.first.email,
+        usuario: loginController.usuarioLogado.first.usuario,
+        senha: loginController.usuarioLogado.first.senha,
+        biografia: loginController.usuarioLogado.first.biografia,
+        localizacao: loginController.usuarioLogado.first.localizacao,
+        telefone: loginController.usuarioLogado.first.telefone,
+        dataNascimento: loginController.usuarioLogado.first.dataNascimento,
+        dataCriacao: loginController.usuarioLogado.first.dataCriacao,
+        seguidores: loginController.usuarioLogado.first.seguidores,
+        seguindo: loginController.usuarioLogado.first.seguindo,
+        imagemUsuario: loginController.usuarioLogado.first.imagemUsuario,
+        imagemUsuarioAtualizado:
+            loginController.usuarioLogado.first.imagemUsuarioAtualizado,
+        imagemCapa: loginController.usuarioLogado.first.imagemCapa,
+        imagemCapaAtualizado:
+            loginController.usuarioLogado.first.imagemCapaAtualizado,
+      );
+    }
+  }
+
+  verificarSeguir() async {
+    seguindo.value = await relacaoController.verificaSeguir(
+      seguindo: usuario!,
+      usuario: loginController.usuarioLogado.first,
+      criarDeletar: false,
+      context: context,
+    );
+  }
+
+  void baixarImagens() {
+    String ref = "capa/${usuario!.id}.jpeg";
+    storageRef = FirebaseStorage.instance.ref().child(ref);
+    storageRef.getDownloadURL().then((url) {
+      imgCapaURL.value = url;
+    });
+    ref = "usuario/${usuario!.id}.jpeg";
+    storageRef = FirebaseStorage.instance.ref().child(ref);
+    storageRef.getDownloadURL().then((url) {
+      imgUsuarioURL.value = url;
+    });
   }
 
   @override
@@ -69,7 +149,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      canPop: true,
+      canPop: false,
       child: Scaffold(
         body: Container(
           width: 100.w,
@@ -98,26 +178,47 @@ class _PerfilScreenState extends State<PerfilScreen> {
                           height: 25.h,
                           child: Stack(
                             children: [
-                              loginController.usuarioLogado.first.imagemCapa
+                              usuarioPerfil!.imagemCapa
                                   ? Obx(
                                       () => Container(
-                                        color: Colors.transparent,
-                                        child: Image(
-                                          image: ResizeImage(
-                                            FileImage(
-                                              File(
-                                                loginController
-                                                    .imagemCapa.value,
-                                              ),
-                                            ),
-                                            width: 486,
-                                            height: 864,
-                                          ),
-                                          width: 100.w,
-                                          height: 18.h,
-                                          fit: BoxFit.cover,
-                                        ),
-                                      ),
+                                          color: Colors.transparent,
+                                          child: usuario == null ||
+                                                  (usuario != null &&
+                                                      usuario!.usuario ==
+                                                          loginController
+                                                              .usuarioLogado
+                                                              .first
+                                                              .usuario)
+                                              ? Image(
+                                                  image: ResizeImage(
+                                                    FileImage(
+                                                      File(
+                                                        loginController
+                                                            .imagemCapa.value,
+                                                      ),
+                                                    ),
+                                                    width: 486,
+                                                    height: 864,
+                                                  ),
+                                                  width: 100.w,
+                                                  height: 18.h,
+                                                  fit: BoxFit.cover,
+                                                )
+                                              : imgCapaURL.value.isEmpty
+                                                  ? const CircularProgressIndicator(
+                                                      color: Colors.white,
+                                                    )
+                                                  : Image(
+                                                      image: ResizeImage(
+                                                        CachedNetworkImageProvider(
+                                                            imgCapaURL.value),
+                                                        width: 486,
+                                                        height: 864,
+                                                      ),
+                                                      width: 100.w,
+                                                      height: 18.h,
+                                                      fit: BoxFit.cover,
+                                                    )),
                                     )
                                   : Container(
                                       width: 100.w,
@@ -171,24 +272,47 @@ class _PerfilScreenState extends State<PerfilScreen> {
                                     onTap: () {},
                                     child: ClipRRect(
                                       borderRadius: BorderRadius.circular(50),
-                                      child: loginController
-                                              .usuarioLogado.first.imagemUsuario
-                                          ? Image(
-                                              fit: BoxFit.cover,
-                                              image: ResizeImage(
-                                                FileImage(
-                                                  File(loginController
-                                                      .imagemUsuario.value),
-                                                ),
-                                                width: 156,
-                                                height: 275,
-                                              ),
-                                            )
+                                      child: usuarioPerfil!.imagemUsuario
+                                          ? usuario == null ||
+                                                  (usuario != null &&
+                                                      usuario!.usuario ==
+                                                          loginController
+                                                              .usuarioLogado
+                                                              .first
+                                                              .usuario)
+                                              ? Image(
+                                                  fit: BoxFit.cover,
+                                                  image: ResizeImage(
+                                                    FileImage(
+                                                      File(loginController
+                                                          .imagemUsuario.value),
+                                                    ),
+                                                    width: 156,
+                                                    height: 275,
+                                                  ),
+                                                )
+                                              : Obx(
+                                                  () => imgUsuarioURL
+                                                          .value.isEmpty
+                                                      ? const CircularProgressIndicator(
+                                                          color: Colors.white,
+                                                        )
+                                                      : Image(
+                                                          fit: BoxFit.cover,
+                                                          image: ResizeImage(
+                                                            CachedNetworkImageProvider(
+                                                                imgUsuarioURL
+                                                                    .value),
+                                                            width: 156,
+                                                            height: 275,
+                                                          ),
+                                                        ),
+                                                )
                                           : const Image(
                                               fit: BoxFit.cover,
                                               image: ResizeImage(
                                                 AssetImage(
-                                                  "assets/images/post01.png",
+                                                  "assets/images/perfil.png",
                                                 ),
                                                 width: 156,
                                                 height: 275,
@@ -208,24 +332,59 @@ class _PerfilScreenState extends State<PerfilScreen> {
                                           MainAxisAlignment.spaceBetween,
                                       children: [
                                         Text(
-                                          loginController
-                                              .usuarioLogado.first.usuario,
+                                          usuarioPerfil!.usuario,
                                           style: Theme.of(context)
                                               .textTheme
                                               .titleLarge,
                                         ),
-                                        SizedBox(
-                                          height: 35,
-                                          child: CustomButton(
-                                            onPressed: () =>
-                                                editarPerfil.value = true,
-                                            context: context,
-                                            text: 'Editar Perfil',
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .onSecondary,
-                                          ),
-                                        ),
+                                        usuario == null ||
+                                                (usuario != null &&
+                                                    usuario!.usuario ==
+                                                        loginController
+                                                            .usuarioLogado
+                                                            .first
+                                                            .usuario)
+                                            ? CustomButton(
+                                                onPressed: () =>
+                                                    editarPerfil.value = true,
+                                                context: context,
+                                                text: 'Editar Perfil',
+                                                fontSize: 11,
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .onSecondary,
+                                              )
+                                            : Obx(
+                                                () => CustomButton(
+                                                  onPressed: () async {
+                                                    bool retorno =
+                                                        await relacaoController
+                                                            .verificaSeguir(
+                                                      seguindo: usuario!,
+                                                      usuario: loginController
+                                                          .usuarioLogado.first,
+                                                      criarDeletar: true,
+                                                      context: context,
+                                                    );
+                                                    if (retorno) {
+                                                      seguindo.value =
+                                                          !seguindo.value;
+                                                    }
+                                                  },
+                                                  context: context,
+                                                  text: seguindo.value
+                                                      ? 'Seguindo'
+                                                      : 'Seguir',
+                                                  fontSize: 11,
+                                                  color: seguindo.value
+                                                      ? Theme.of(context)
+                                                          .colorScheme
+                                                          .secondary
+                                                      : Theme.of(context)
+                                                          .colorScheme
+                                                          .onSecondary,
+                                                ),
+                                              ),
                                       ],
                                     ),
                                   ],
@@ -239,10 +398,8 @@ class _PerfilScreenState extends State<PerfilScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              loginController.usuarioLogado.first.biografia !=
-                                          null &&
-                                      loginController.usuarioLogado.first
-                                          .biografia!.isNotEmpty
+                              usuarioPerfil!.biografia != null &&
+                                      usuarioPerfil!.biografia!.isNotEmpty
                                   ? Column(
                                       children: [
                                         SizedBox(
@@ -251,9 +408,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
                                             text: TextSpan(
                                               children: [
                                                 buildTextSpan(
-                                                  loginController.usuarioLogado
-                                                          .first.biografia ??
-                                                      '',
+                                                  usuarioPerfil!.biografia!,
                                                   context,
                                                 ),
                                               ],
@@ -264,19 +419,17 @@ class _PerfilScreenState extends State<PerfilScreen> {
                                       ],
                                     )
                                   : Container(),
-                              loginController.usuarioLogado.first.localizacao !=
-                                          null &&
-                                      loginController.usuarioLogado.first
-                                          .localizacao!.isNotEmpty
+                              usuarioPerfil!.localizacao != null &&
+                                      usuarioPerfil!.localizacao!.isNotEmpty
                                   ? Row(
                                       children: [
                                         const Icon(
-                                          CupertinoIcons.map_pin,
+                                          CupertinoIcons.location_solid,
+                                          size: 13,
                                         ),
                                         SizedBox(width: 1.w),
                                         Text(
-                                          loginController
-                                              .usuarioLogado.first.localizacao!,
+                                          usuarioPerfil!.localizacao!,
                                           style: Theme.of(context)
                                               .textTheme
                                               .labelSmall!
@@ -288,7 +441,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
                                     )
                                   : Container(),
                               Text(
-                                'criado em ${dateFormat.format(loginController.usuarioLogado.first.dataCriacao.toDate())}',
+                                'criado em ${dateFormat.format(usuarioPerfil!.dataCriacao.toDate())}',
                                 style: Theme.of(context)
                                     .textTheme
                                     .labelSmall!
@@ -299,12 +452,13 @@ class _PerfilScreenState extends State<PerfilScreen> {
                               SizedBox(height: 2.h),
                               Row(
                                 children: [
-                                  Text(
-                                    loginController
-                                        .usuarioLogado.first.seguidores
-                                        .toString(),
-                                    style:
-                                        Theme.of(context).textTheme.titleSmall,
+                                  Obx(
+                                    () => Text(
+                                      usuarioPerfil!.seguidores.toString(),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleSmall,
+                                    ),
                                   ),
                                   SizedBox(width: 1.w),
                                   Text(
@@ -317,11 +471,13 @@ class _PerfilScreenState extends State<PerfilScreen> {
                                         ),
                                   ),
                                   SizedBox(width: 5.w),
-                                  Text(
-                                    loginController.usuarioLogado.first.seguindo
-                                        .toString(),
-                                    style:
-                                        Theme.of(context).textTheme.titleSmall,
+                                  Obx(
+                                    () => Text(
+                                      usuarioPerfil!.seguindo.toString(),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleSmall,
+                                    ),
                                   ),
                                   SizedBox(width: 1.w),
                                   Text(
@@ -346,33 +502,42 @@ class _PerfilScreenState extends State<PerfilScreen> {
                       color: Colors.grey,
                     ),
                     SizedBox(height: 2.h),
-                    SizedBox(
-                      width: 100.w,
-                      child: ListView.separated(
-                        itemCount:
-                            publicacaoController.listPublicacao.length + 1,
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemBuilder: (context, index) {
-                          index = index - 1;
-                          return index < 0
-                              ? const SizedBox()
-                              : CardPostComponent(
-                                  publicacao: publicacaoController
-                                      .listPublicacao[index],
-                                  compartilhado: false,
-                                );
-                        },
-                        separatorBuilder: (context, index) => index == 0
-                            ? Container()
-                            : Container(
-                                width: 100.w,
-                                height: 0.5,
-                                color: Colors.grey,
-                              ),
-                      ),
-                      // ),
-                    ),
+                    FutureBuilder(
+                        future: publicacaoController.buscarPorUsuario(
+                            usuarioPerfil!, 1, context),
+                        builder: (context, snapshot) {
+                          return SizedBox(
+                            width: 100.w,
+                            child: ListView.separated(
+                              itemCount: snapshot.data != null
+                                  ? snapshot.data!.length + 1
+                                  : 0,
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemBuilder: (context, index) {
+                                index = index - 1;
+                                return index < 0
+                                    ? const SizedBox()
+                                    : CardPostComponent(
+                                        publicacao: snapshot.data![index],
+                                        compartilhado: false,
+                                        telaResposta: false,
+                                        respondendoDireto: false,
+                                        respondendoPublicacao: false,
+                                        contador: 0,
+                                      );
+                              },
+                              separatorBuilder: (context, index) => index == 0
+                                  ? Container()
+                                  : Container(
+                                      width: 100.w,
+                                      height: 0.5,
+                                      color: Colors.grey,
+                                    ),
+                            ),
+                            // ),
+                          );
+                        }),
                   ],
                 ),
               ),
@@ -427,7 +592,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
                                 ),
                                 SizedBox(width: 2.w),
                                 Text(
-                                  loginController.usuarioLogado.first.usuario,
+                                  usuarioPerfil!.usuario,
                                   style: Theme.of(context)
                                       .textTheme
                                       .titleLarge!

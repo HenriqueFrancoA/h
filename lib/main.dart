@@ -68,11 +68,11 @@ class MyApp extends StatelessWidget {
               page: () => const PublicarScreen(),
             ),
             GetPage(
-              name: '/publicacao',
+              name: '/publicacao/:id',
               page: () => const PublicacaoScreen(),
             ),
             GetPage(
-              name: '/perfil',
+              name: '/perfil/:id',
               page: () => const PerfilScreen(),
             ),
             GetPage(

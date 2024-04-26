@@ -24,6 +24,13 @@ class _HomeScreenState extends State<HomeScreen> {
   final loginController = Get.put(LoginController());
   final publicacaoController = Get.put(PublicacaoController());
 
+  int pagina = 1;
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return PopScope(
@@ -57,33 +64,55 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             child: Stack(
               children: [
-                SizedBox(
-                  width: 100.w,
-                  height: 100.h,
-                  child: ListView.separated(
-                    itemCount: publicacaoController.listPublicacao.length + 1,
-                    itemBuilder: (context, index) {
-                      index = index - 1;
+                FutureBuilder(
+                    future: publicacaoController.buscarTodas(null, context),
+                    builder: (context, snapshot) {
+                      return SizedBox(
+                        width: 100.w,
+                        height: 100.h,
+                        child: ListView.separated(
+                          itemCount: snapshot.data != null
+                              ? snapshot.data!.length + 1
+                              : 0,
+                          itemBuilder: (context, index) {
+                            index = index - 1;
 
-                      return index < 0
-                          ? SizedBox(
-                              height: 10.h,
-                            )
-                          : CardPostComponent(
-                              publicacao:
-                                  publicacaoController.listPublicacao[index],
-                              compartilhado: false,
-                            );
-                    },
-                    separatorBuilder: (context, index) => index == 0
-                        ? Container()
-                        : Container(
-                            width: 100.w,
-                            height: 0.5,
-                            color: Colors.grey,
-                          ),
-                  ),
-                ),
+                            if (index == snapshot.data!.length - 1) {
+                              pagina++;
+
+                              return SizedBox(
+                                height: 50.h,
+                                child: const Center(
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              );
+                            }
+
+                            return index < 0
+                                ? SizedBox(
+                                    height: 10.h,
+                                  )
+                                : CardPostComponent(
+                                    publicacao: snapshot.data![index],
+                                    compartilhado: false,
+                                    telaResposta: false,
+                                    respondendoDireto: false,
+                                    respondendoPublicacao: false,
+                                    contador: 0,
+                                  );
+                          },
+                          separatorBuilder: (context, index) => index == 0
+                              ? Container()
+                              : Container(
+                                  width: 100.w,
+                                  height: 0.5,
+                                  color: Colors.grey,
+                                ),
+                        ),
+                      );
+                    }),
                 Obx(
                   () => AnimatedOpacity(
                     opacity: mostrarBarra.isTrue ? 1.0 : 0.0,
@@ -105,7 +134,12 @@ class _HomeScreenState extends State<HomeScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           GestureDetector(
-                            onTap: () => Get.offNamed('/perfil'),
+                            onTap: () => Get.offNamed(
+                              '/perfil/${loginController.usuarioLogado.first.id}',
+                              arguments: {
+                                'usuario': null,
+                              },
+                            ),
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(50),
                               child: loginController
@@ -129,7 +163,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       fit: BoxFit.cover,
                                       image: ResizeImage(
                                         AssetImage(
-                                          "assets/images/post01.png",
+                                          "assets/images/perfil.png",
                                         ),
                                         width: 130,
                                         height: 240,
@@ -144,7 +178,13 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           ),
                           GestureDetector(
-                            onTap: () => Get.toNamed('/publicar'),
+                            onTap: () => Get.toNamed(
+                              '/publicar',
+                              arguments: {
+                                'comentando': null,
+                                'compartilhando': null,
+                              },
+                            ),
                             child: const Icon(
                               CupertinoIcons.add,
                               color: Colors.white,

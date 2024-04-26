@@ -102,7 +102,7 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
                               salvando.value = true;
 
                               userController
-                                  .atualizarUsuario(
+                                  .atualizar(
                                 usuario: usuarioController.text,
                                 biografia: bioController.text,
                                 localizacao: localizacaoController.text,
@@ -117,7 +117,12 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
                                   await loginController.carregarImagens();
                                   salvando.value = false;
                                   widget.onTap();
-                                  Get.offAllNamed('/perfil');
+                                  Get.offAllNamed(
+                                    '/perfil/${loginController.usuarioLogado.first.id}',
+                                    arguments: {
+                                      'usuario': null,
+                                    },
+                                  );
                                 });
                               });
                             },
@@ -260,7 +265,7 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
                                                       fit: BoxFit.cover,
                                                       image: ResizeImage(
                                                         AssetImage(
-                                                          "assets/images/post01.png",
+                                                          "assets/images/perfil.png",
                                                         ),
                                                         width: 156,
                                                         height: 275,

@@ -12,26 +12,26 @@ class Comentario {
     required this.resposta,
   });
 
-  factory Comentario.fromSnapshot(DocumentSnapshot snapshot) {
-    Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
+  static Future<Comentario> fromSnapshot(DocumentSnapshot doc) async {
+    DocumentSnapshot publicacaoDoc = await doc['PUBLICACAO'].get();
+    DocumentSnapshot respostaDoc = await doc['RESPOSTA'].get();
+
     return Comentario(
-      id: snapshot.id,
-      publicacao: Publicacao.fromSnapshot(data['PUBLICACAO']),
-      resposta: Publicacao.fromSnapshot(data['RESPOSTA']),
+      id: doc.id,
+      publicacao: await Publicacao.fromSnapshot(publicacaoDoc),
+      resposta: await Publicacao.fromSnapshot(respostaDoc),
     );
   }
 
   Comentario.fromJson(Map<String, dynamic> json) {
-    id = json['ID'];
     publicacao = Publicacao.fromJson(json['PUBLICACAO']);
     resposta = Publicacao.fromJson(json['RESPOSTA']);
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
-    data['ID'] = id;
+    data['PUBLICACAO'] = publicacao;
     data['RESPOSTA'] = resposta;
-    data['SEGUINDO'] = publicacao;
     return data;
   }
 }

@@ -25,10 +25,10 @@ class _CardMensagemComponentState extends State<CardMensagemComponent> {
               fit: BoxFit.cover,
               image: ResizeImage(
                 AssetImage(
-                  "assets/images/post01c.jpg",
+                  "assets/images/perfil.png",
                 ),
-                width: 275,
-                height: 156,
+                width: 156,
+                height: 275,
               ),
             ),
           ),

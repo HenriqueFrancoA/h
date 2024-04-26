@@ -34,8 +34,6 @@ class _LoadingScreenState extends State<LoadingScreen> {
     if (salvarAcesso) {
       loginController.login(email, senha, null).then((resposta) async {
         if (resposta) {
-          await publicacaoController.carregarPublicacao();
-
           Timer(
             const Duration(seconds: 2),
             () => Get.offAllNamed('/home'),

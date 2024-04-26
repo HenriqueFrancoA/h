@@ -8,17 +8,19 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:h/apis/usuario_api.dart';
-import 'package:h/controllers/internet_controller.dart';
+import 'package:h/utils/internet_controller.dart';
 import 'package:h/controllers/login_controller.dart';
 import 'package:h/models/usuario.dart';
 import 'package:h/utils/notification_snack_bar.dart';
 import 'package:intl/intl.dart';
 
 class UsuarioController extends GetxController {
-  final internetController = Get.put(InternetController());
+  final internetController = Internet();
   final loginController = Get.put(LoginController());
 
   final dateFormat = DateFormat('dd MMMM yyyy');
+
+  final UsuarioApi usuarioApi = UsuarioApi();
 
   Future<bool> upload(
     String path,
@@ -49,12 +51,13 @@ class UsuarioController extends GetxController {
           );
       return true;
     } on FirebaseException catch (e) {
-      NotificationSnackbar.showError(context, e.message ?? '');
+      NotificationSnackbar.showError(
+          context, e.message ?? 'Ocorreu algum erro.');
       return false;
     }
   }
 
-  Future<bool> criarUsuario(
+  Future<bool> criar(
     String email,
     String usuario,
     String senha,
@@ -66,11 +69,16 @@ class UsuarioController extends GetxController {
       return false;
     }
 
+    if (!await verificaUsuario(usuario, context)) {
+      return false;
+    }
+
     final credential =
         await FirebaseAuth.instance.createUserWithEmailAndPassword(
       email: email,
       password: senha,
     );
+
     Usuario user = Usuario(
       uId: credential.user!.uid,
       email: email,
@@ -79,25 +87,25 @@ class UsuarioController extends GetxController {
       telefone: telefone,
       dataNascimento: dataNascimento,
       dataCriacao: Timestamp.now(),
-      seguidores: 0,
-      seguindo: 0,
+      seguidores: 0.obs,
+      seguindo: 0.obs,
       imagemUsuario: false,
       imagemUsuarioAtualizado: 0,
       imagemCapa: false,
       imagemCapaAtualizado: 0,
     );
 
-    return await UsuarioApi.criarUsuario(user);
+    return await usuarioApi.criar(user);
   }
 
-  Future<bool> atualizarUsuario({
+  Future<bool> atualizar({
     String? usuario,
     String? biografia,
     String? localizacao,
     String? telefone,
     Timestamp? dataNascimento,
-    int? seguidores,
-    int? seguindo,
+    RxInt? seguidores,
+    RxInt? seguindo,
     File? imgUsuario,
     File? imgCapa,
     required Usuario user,
@@ -125,15 +133,10 @@ class UsuarioController extends GetxController {
     }
 
     if (usuario != null && usuario != user.usuario) {
-      Usuario? verificaUsuarioDisponivel =
-          await UsuarioApi.buscaPorUsuario(usuario);
-
-      if (verificaUsuarioDisponivel != null) {
-        NotificationSnackbar.showError(context,
-            'Não foi possível trocar o usuário, usuário já está sendo utilizado por outra pessoa.');
-        return false;
-      } else {
+      if (await verificaUsuario(usuario, context)) {
         usuario = user.usuario;
+      } else {
+        return false;
       }
     }
     try {
@@ -145,11 +148,9 @@ class UsuarioController extends GetxController {
         user.imagemUsuarioAtualizado++;
         await upload(imgUsuario.path, false, context);
       }
-      bool usuarioAtualizado = await UsuarioApi.atualizarUsuario(user);
+      bool usuarioAtualizado = await usuarioApi.atualizar(user);
 
       if (usuarioAtualizado) {
-        NotificationSnackbar.showSuccess(
-            context, 'Perfil atualizado com sucesso!');
         return true;
       } else {
         NotificationSnackbar.showError(context,
@@ -161,5 +162,19 @@ class UsuarioController extends GetxController {
           'Ocorreu um erro ao atualizar o usuário. Tente novamente mais tarde.');
       return false;
     }
+  }
+
+  Future<bool> verificaUsuario(
+    String usuario,
+    BuildContext context,
+  ) async {
+    Usuario? verificaUsuarioDisponivel =
+        await UsuarioApi.buscaPorUsuario(usuario);
+    if (verificaUsuarioDisponivel != null) {
+      NotificationSnackbar.showError(context,
+          'O usuário escolhido já está sendo utilizado por outra pessoa.');
+      return false;
+    }
+    return true;
   }
 }

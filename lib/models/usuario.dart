@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:get/get.dart';
 
-class Usuario {
+class Usuario extends Object {
   String? id;
   String? uId;
   late String email;
@@ -11,8 +12,8 @@ class Usuario {
   late Timestamp dataCriacao;
   String? biografia;
   String? localizacao;
-  late int seguidores;
-  late int seguindo;
+  late RxInt seguidores;
+  late RxInt seguindo;
   late bool imagemUsuario;
   late int imagemUsuarioAtualizado;
   late bool imagemCapa;
@@ -37,7 +38,7 @@ class Usuario {
     required this.imagemCapaAtualizado,
   });
 
-  factory Usuario.fromSnapshot(DocumentSnapshot snapshot) {
+  static Future<Usuario> fromSnapshot(DocumentSnapshot snapshot) async {
     Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
     return Usuario(
       id: snapshot.id,
@@ -50,8 +51,8 @@ class Usuario {
       dataCriacao: data['DATA_CRIACAO'],
       biografia: data['BIOGRAFIA'],
       localizacao: data['LOCALIZACAO'],
-      seguidores: data['SEGUIDORES'],
-      seguindo: data['SEGUINDO'],
+      seguidores: RxInt(data['SEGUIDORES']),
+      seguindo: RxInt(data['SEGUINDO']),
       imagemUsuario: data['IMAGEM_USUARIO'],
       imagemUsuarioAtualizado: data['IMAGEM_USUARIO_ATUALIZADO'],
       imagemCapa: data['IMAGEM_CAPA'],

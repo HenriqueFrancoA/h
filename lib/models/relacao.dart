@@ -12,24 +12,24 @@ class Relacao {
     required this.seguindo,
   });
 
-  factory Relacao.fromSnapshot(DocumentSnapshot snapshot) {
-    Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
+  static Future<Relacao> fromSnapshot(DocumentSnapshot doc) async {
+    DocumentSnapshot usuarioDoc = await doc['USUARIO'].get();
+    DocumentSnapshot seguindoDoc = await doc['SEGUINDO'].get();
+
     return Relacao(
-      id: snapshot.id,
-      usuario: Usuario.fromSnapshot(data['USUARIO']),
-      seguindo: Usuario.fromSnapshot(data['SEGUINDO']),
+      id: doc.id,
+      usuario: await Usuario.fromSnapshot(usuarioDoc),
+      seguindo: await Usuario.fromSnapshot(seguindoDoc),
     );
   }
 
   Relacao.fromJson(Map<String, dynamic> json) {
-    id = json['ID'];
     usuario = Usuario.fromJson(json['USUARIO']);
     seguindo = Usuario.fromJson(json['SEGUINDO']);
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
-    data['ID'] = id;
     data['USUARIO'] = usuario;
     data['SEGUINDO'] = seguindo;
     return data;

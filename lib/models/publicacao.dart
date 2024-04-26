@@ -1,16 +1,19 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:get/get.dart';
+import 'package:h/models/compartilhamento.dart';
 import 'package:h/models/usuario.dart';
 
 class Publicacao {
   String? id;
   late Usuario usuario;
-  Publicacao? compartilhamento;
+  Compartilhamento? compartilhamento;
   String? texto;
   late bool imagem;
+  late bool comentario;
   late Timestamp dataCriacao;
-  late int curtidas;
-  late int comentarios;
-  late int compartilhamentos;
+  late RxInt curtidas;
+  late RxInt comentarios;
+  late RxInt compartilhamentos;
 
   Publicacao({
     this.id,
@@ -18,33 +21,45 @@ class Publicacao {
     this.compartilhamento,
     this.texto,
     required this.imagem,
+    required this.comentario,
     required this.dataCriacao,
     required this.curtidas,
     required this.comentarios,
     required this.compartilhamentos,
   });
 
-  factory Publicacao.fromSnapshot(DocumentSnapshot snapshot) {
-    Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
+  static Future<Publicacao> fromSnapshot(DocumentSnapshot doc) async {
+    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+
+    DocumentSnapshot usuarioDoc = await doc['USUARIO'].get();
+    DocumentSnapshot? compartilhamentoDoc;
+
+    if (doc['COMPARTILHAMENTO'] != null) {
+      compartilhamentoDoc = await doc['COMPARTILHAMENTO'].get();
+    }
+
     return Publicacao(
-      id: snapshot.id,
-      usuario: data['USUARIO'],
-      compartilhamento: Publicacao.fromSnapshot(data['COMPARTILHAMENTO']),
+      id: doc.id,
+      usuario: await Usuario.fromSnapshot(usuarioDoc),
+      compartilhamento: compartilhamentoDoc != null
+          ? await Compartilhamento.fromSnapshot(compartilhamentoDoc)
+          : null,
       texto: data['TEXTO'],
       imagem: data['IMAGEM'],
+      comentario: data['COMENTARIO'],
       dataCriacao: data['DATA_CRIACAO'],
-      curtidas: data['CURTIDAS'],
-      comentarios: data['COMENTARIOS'],
-      compartilhamentos: data['COMPARTILHAMENTOS'],
+      curtidas: RxInt(data['CURTIDAS']),
+      comentarios: RxInt(data['COMENTARIOS']),
+      compartilhamentos: RxInt(data['COMPARTILHAMENTOS']),
     );
   }
 
   Publicacao.fromJson(Map<String, dynamic> json) {
-    id = json['ID'];
-    usuario = json['USUARIO'];
-    compartilhamento = Publicacao.fromJson(json['COMPARTILHAMENTO']);
+    usuario = Usuario.fromJson(json['USUARIO']);
+    compartilhamento = Compartilhamento.fromJson(json['COMPARTILHAMENTO']);
     texto = json['TEXTO'];
     imagem = json['IMAGEM'];
+    comentario = json['COMENTARIO'];
     dataCriacao = json['DATA_CRIACAO'];
     curtidas = json['CURTIDAS'];
     comentarios = json['COMENTARIOS'];
@@ -53,15 +68,15 @@ class Publicacao {
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
-    data['ID'] = id;
     data['USUARIO'] = usuario;
     data['COMPARTILHAMENTO'] = compartilhamento;
     data['TEXTO'] = texto;
     data['IMAGEM'] = imagem;
+    data['COMENTARIO'] = comentario;
     data['DATA_CRIACAO'] = dataCriacao;
-    data['CURTIDAS'] = curtidas;
-    data['COMENTARIOS'] = comentarios;
-    data['COMPARTILHAMENTOS'] = compartilhamentos;
+    data['CURTIDAS'] = curtidas.value;
+    data['COMENTARIOS'] = comentarios.value;
+    data['COMPARTILHAMENTOS'] = compartilhamentos.value;
     return data;
   }
 }

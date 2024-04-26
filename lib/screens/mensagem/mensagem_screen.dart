@@ -25,7 +25,7 @@ class _MensagemScreenState extends State<MensagemScreen> {
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      canPop: true,
+      canPop: false,
       child: Scaffold(
         backgroundColor: Theme.of(context).colorScheme.primary,
         body: NotificationListener<ScrollUpdateNotification>(
@@ -64,7 +64,12 @@ class _MensagemScreenState extends State<MensagemScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           GestureDetector(
-                            onTap: () => Get.offNamed('/perfil'),
+                            onTap: () => Get.offNamed(
+                              '/perfil/${loginController.usuarioLogado.first.id}',
+                              arguments: {
+                                'usuario': null,
+                              },
+                            ),
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(50),
                               child: loginController
@@ -88,7 +93,7 @@ class _MensagemScreenState extends State<MensagemScreen> {
                                       fit: BoxFit.cover,
                                       image: ResizeImage(
                                         AssetImage(
-                                          "assets/images/post01.png",
+                                          "assets/images/perfil.png",
                                         ),
                                         width: 130,
                                         height: 240,
