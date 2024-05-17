@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+//Cria uma barra de notificação temporária na tela.
 class NotificationSnackbar {
   static void show({
     required BuildContext context,
@@ -23,7 +24,7 @@ class NotificationSnackbar {
     show(
       context: context,
       text: message,
-      backgroundColor: Colors.red,
+      backgroundColor: Theme.of(context).colorScheme.error,
       textStyle: Theme.of(context).textTheme.bodySmall,
     );
   }

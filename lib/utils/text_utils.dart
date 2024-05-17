@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 
-TextSpan buildTextSpan(String text, BuildContext context) {
+//Cria uma área de texto flexível com a largura da tela.
+TextSpan buildTextSpan(
+  String text,
+  BuildContext context,
+  TextStyle? textStyle,
+) {
   final List<InlineSpan> children = [];
 
   final RegExp regex = RegExp(r'[@#](\w+)');
@@ -13,7 +18,7 @@ TextSpan buildTextSpan(String text, BuildContext context) {
       children.add(
         TextSpan(
           text: text.substring(start, match.start),
-          style: Theme.of(context).textTheme.labelSmall,
+          style: textStyle ?? Theme.of(context).textTheme.labelSmall,
         ),
       );
     }
@@ -21,9 +26,10 @@ TextSpan buildTextSpan(String text, BuildContext context) {
     children.add(
       TextSpan(
         text: match.group(0),
-        style: Theme.of(context).textTheme.labelSmall!.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+        style: textStyle ??
+            Theme.of(context).textTheme.labelSmall!.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
       ),
     );
     start = match.end;
@@ -33,7 +39,7 @@ TextSpan buildTextSpan(String text, BuildContext context) {
     children.add(
       TextSpan(
         text: text.substring(start),
-        style: Theme.of(context).textTheme.labelSmall,
+        style: textStyle ?? Theme.of(context).textTheme.labelSmall,
       ),
     );
   }

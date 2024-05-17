@@ -3,21 +3,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:h/firebase_options.dart';
-import 'package:h/screens/cadastro/cadastro_screen.dart';
+import 'package:h/screens/config/configuration_screen.dart';
 import 'package:h/screens/home/home_screen.dart';
 import 'package:h/screens/loading/loading_screen.dart';
 import 'package:h/screens/login/login_screen.dart';
-import 'package:h/screens/mensagem/mensagem_screen.dart';
-import 'package:h/screens/perfil/perfil_screen.dart';
-import 'package:h/screens/publicacao/publicacao_screen.dart';
-import 'package:h/screens/publicar/publicar_screen.dart';
+import 'package:h/screens/message/message_screen.dart';
+import 'package:h/screens/profile/profile_screen.dart';
+import 'package:h/screens/publication/publication_screen.dart';
+import 'package:h/screens/publish/publish_screen.dart';
+import 'package:h/screens/register/register_screen.dart';
+import 'package:h/screens/search/search_screen.dart';
+import 'package:h/screens/user/users_screen.dart';
 import 'package:h/themes/themes.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:sizer/sizer.dart';
-
-bool salvarAcesso = false;
-String email = '';
-String senha = '';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -43,7 +42,7 @@ class MyApp extends StatelessWidget {
       return GetMaterialApp(
           title: '',
           debugShowCheckedModeBanner: false,
-          themeMode: ThemeMode.light,
+          themeMode: ThemeMode.dark,
           theme: darkTheme,
           home: const LoadingScreen(),
           getPages: [
@@ -56,28 +55,40 @@ class MyApp extends StatelessWidget {
               page: () => const LoginScreen(),
             ),
             GetPage(
-              name: '/cadastro',
-              page: () => const CadastroScreen(),
+              name: '/register',
+              page: () => const RegisterScreen(),
             ),
             GetPage(
               name: '/home',
               page: () => const HomeScreen(),
             ),
             GetPage(
-              name: '/publicar',
-              page: () => const PublicarScreen(),
+              name: '/publish',
+              page: () => const PublishScreen(),
             ),
             GetPage(
-              name: '/publicacao/:id',
-              page: () => const PublicacaoScreen(),
+              name: '/publication/:id',
+              page: () => const PublicationScreen(),
             ),
             GetPage(
-              name: '/perfil/:id',
-              page: () => const PerfilScreen(),
+              name: '/profile/:id',
+              page: () => const ProfileScreen(),
             ),
             GetPage(
-              name: '/mensagem',
-              page: () => const MensagemScreen(),
+              name: '/message',
+              page: () => const MessageScreen(),
+            ),
+            GetPage(
+              name: '/users',
+              page: () => const UsersScreen(),
+            ),
+            GetPage(
+              name: '/search',
+              page: () => const SearchScreen(),
+            ),
+            GetPage(
+              name: '/config',
+              page: () => const ConfigurationScreen(),
             ),
           ]);
     });

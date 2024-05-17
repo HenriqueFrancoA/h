@@ -2,10 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:h/controllers/login_controller.dart';
-import 'package:h/controllers/publicacao_controller.dart';
+import 'package:h/components/container_background_component.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:sizer/sizer.dart';
+
+import 'package:h/controllers/login_controller.dart';
 
 class LoadingScreen extends StatefulWidget {
   const LoadingScreen({Key? key}) : super(key: key);
@@ -15,25 +15,24 @@ class LoadingScreen extends StatefulWidget {
 }
 
 class _LoadingScreenState extends State<LoadingScreen> {
-  final loginController = Get.put(LoginController());
-  final publicacaoController = Get.put(PublicacaoController());
+  final _loginController = Get.put(LoginController());
 
   @override
   void initState() {
     super.initState();
-    verificarAcesso();
+    checkAccess();
   }
 
-  verificarAcesso() async {
+  checkAccess() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    bool salvarAcesso = prefs.getBool("salvarAcesso") ?? false;
+    bool saveAccess = prefs.getBool("saveAccess") ?? false;
 
     String email = prefs.getString("email") ?? '';
-    String senha = prefs.getString("senha") ?? '';
+    String password = prefs.getString("password") ?? '';
 
-    if (salvarAcesso) {
-      loginController.login(email, senha, null).then((resposta) async {
-        if (resposta) {
+    if (saveAccess) {
+      _loginController.login(email, password, null).then((response) {
+        if (response) {
           Timer(
             const Duration(seconds: 2),
             () => Get.offAllNamed('/home'),
@@ -55,22 +54,10 @@ class _LoadingScreenState extends State<LoadingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return PopScope(
+    return const PopScope(
       canPop: false,
-      child: Container(
-        width: 100.w,
-        height: 100.h,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Theme.of(context).colorScheme.background,
-              Theme.of(context).colorScheme.onBackground,
-            ],
-          ),
-        ),
-        child: const Center(
+      child: ContainerBackgroundComponent(
+        widget: Center(
           child: CircularProgressIndicator(
             color: Colors.white,
           ),

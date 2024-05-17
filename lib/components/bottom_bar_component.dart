@@ -4,11 +4,11 @@ import 'package:get/get.dart';
 import 'package:sizer/sizer.dart';
 
 class BottomBarComponent extends StatelessWidget {
-  final RxBool mostrarBarra;
+  final RxBool showBar;
   final int index;
   const BottomBarComponent({
     super.key,
-    required this.mostrarBarra,
+    required this.showBar,
     required this.index,
   });
 
@@ -18,7 +18,7 @@ class BottomBarComponent extends StatelessWidget {
       alignment: Alignment.bottomCenter,
       child: Obx(
         () => AnimatedOpacity(
-          opacity: mostrarBarra.isTrue ? 1.0 : 0.93,
+          opacity: showBar.isTrue ? 1.0 : 0.93,
           duration: const Duration(milliseconds: 200),
           child: Container(
             width: 100.w,
@@ -50,7 +50,8 @@ class BottomBarComponent extends StatelessWidget {
                         ),
                       ),
                       GestureDetector(
-                        onTap: () {},
+                        onTap: () =>
+                            index == 1 ? null : Get.offAllNamed('/search'),
                         child: const Icon(
                           CupertinoIcons.search,
                           color: Colors.white,
@@ -58,22 +59,23 @@ class BottomBarComponent extends StatelessWidget {
                         ),
                       ),
                       GestureDetector(
-                        onTap: () {},
-                        child: const Icon(
-                          CupertinoIcons.bell_fill,
-                          color: Colors.white,
-                          size: 30,
-                        ),
-                      ),
-                      GestureDetector(
                         onTap: () =>
-                            index == 3 ? null : Get.offAllNamed('/mensagem'),
+                            index == 2 ? null : Get.offAllNamed('/config'),
                         child: const Icon(
-                          Icons.message,
+                          CupertinoIcons.gear,
                           color: Colors.white,
                           size: 30,
                         ),
                       ),
+                      // GestureDetector(
+                      //   onTap: () =>
+                      //       index == 3 ? null : Get.offAllNamed('/message'),
+                      //   child: const Icon(
+                      //     Icons.message,
+                      //     color: Colors.white,
+                      //     size: 30,
+                      //   ),
+                      // ),
                     ],
                   ),
                 ),

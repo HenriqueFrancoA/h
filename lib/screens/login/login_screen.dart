@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:h/components/circular_progress_component.dart';
+import 'package:h/components/container_background_component.dart';
+import 'package:sizer/sizer.dart';
+
 import 'package:h/components/button_components.dart';
 import 'package:h/components/textfield_component.dart';
 import 'package:h/controllers/login_controller.dart';
 import 'package:h/utils/notification_snack_bar.dart';
-import 'package:sizer/sizer.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -14,12 +17,12 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final loginController = Get.put(LoginController());
+  final _loginController = Get.put(LoginController());
 
-  final usuarioController = TextEditingController();
-  final senhaController = TextEditingController();
+  final _userNameController = TextEditingController();
+  final _passwordController = TextEditingController();
 
-  RxBool logando = RxBool(false);
+  RxBool loading = RxBool(false);
 
   @override
   Widget build(BuildContext context) {
@@ -30,21 +33,9 @@ class _LoginScreenState extends State<LoginScreen> {
         body: Stack(
           children: [
             SingleChildScrollView(
-              child: Container(
-                width: 100.w,
-                height: 100.h,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Theme.of(context).colorScheme.background,
-                      Theme.of(context).colorScheme.onBackground,
-                    ],
-                  ),
-                ),
-                padding: const EdgeInsets.all(10),
-                child: Column(
+              child: ContainerBackgroundComponent(
+                padding: 10,
+                widget: Column(
                   children: [
                     SizedBox(height: 3.h),
                     SizedBox(
@@ -73,17 +64,15 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           SizedBox(height: 1.h),
                           TextFieldComponent(
-                            controller: usuarioController,
-                            labelText: "E-mail, telefone ou usuário",
+                            controller: _userNameController,
+                            hintText: "E-mail, telefone ou usuário",
                             width: 100.w,
-                            height: 50,
                           ),
                           SizedBox(height: 2.h),
                           TextFieldComponent(
-                            controller: senhaController,
+                            controller: _passwordController,
                             labelText: "Senha",
                             width: 100.w,
-                            height: 50,
                             obscureText: true,
                           ),
                           SizedBox(height: 1.h),
@@ -104,25 +93,25 @@ class _LoginScreenState extends State<LoginScreen> {
                           SizedBox(
                             width: 100.w,
                             height: 50,
-                            child: CustomButton(
+                            child: CustomButtonComponent(
                               onPressed: () async {
-                                logando.value = true;
-                                if (usuarioController.text == '' ||
-                                    senhaController.text == '') {
+                                loading.value = true;
+                                if (_userNameController.text == '' ||
+                                    _passwordController.text == '') {
                                   NotificationSnackbar.showError(context,
                                       'Email e/ou senha não preenchidos.');
-                                  logando.value = false;
+                                  loading.value = false;
                                   return;
                                 }
 
-                                await loginController
+                                await _loginController
                                     .login(
-                                  usuarioController.text,
-                                  senhaController.text,
+                                  _userNameController.text,
+                                  _passwordController.text,
                                   context,
                                 )
                                     .then((value) {
-                                  logando.value = false;
+                                  loading.value = false;
                                   if (value) {
                                     Get.offAllNamed("/home");
                                   }
@@ -134,7 +123,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           SizedBox(height: 2.h),
                           GestureDetector(
-                            onTap: () => Get.toNamed('/cadastro'),
+                            onTap: () => Get.toNamed('/register'),
                             child: Text(
                               'Criar conta',
                               style: Theme.of(context)
@@ -166,7 +155,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         borderRadius: BorderRadius.circular(5),
                       ),
-                      child: CustomButton(
+                      child: CustomButtonComponent(
                         onPressed: () {},
                         color: Colors.white,
                         context: context,
@@ -176,45 +165,11 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     SizedBox(height: 2.h),
-                    Container(
-                      width: 85.w,
-                      height: 50,
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: Colors.white,
-                          width: 2,
-                        ),
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                      child: CustomButton(
-                        onPressed: () {},
-                        color: Colors.black,
-                        context: context,
-                        icon: Icons.apple,
-                      ),
-                    ),
                   ],
                 ),
               ),
             ),
-            Obx(
-              () => logando.isTrue
-                  ? Container(
-                      width: 100.w,
-                      height: 100.h,
-                      color: Colors.black87,
-                      child: const Center(
-                        child: SizedBox(
-                          width: 30,
-                          height: 30,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    )
-                  : Container(),
-            ),
+            CircularProgressComponent(loading: loading),
           ],
         ),
       ),

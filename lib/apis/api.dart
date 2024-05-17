@@ -1,5 +1,5 @@
 abstract class Api {
-  Future<dynamic> criar(Object objeto);
-  Future<bool> atualizar(Object objeto);
-  Future<bool> deletar(String id);
+  Future<dynamic> create(Object object);
+  Future<bool> update(Object object);
+  Future<bool> delete(String id);
 }

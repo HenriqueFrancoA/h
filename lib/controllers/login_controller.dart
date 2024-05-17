@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -5,33 +7,38 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:h/apis/usuario_api.dart';
-import 'package:h/utils/internet_controller.dart';
-import 'package:h/models/usuario.dart';
-import 'package:h/utils/notification_snack_bar.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:h/apis/user_api.dart';
+// ignore: library_prefixes
+import 'package:h/models/user.dart' as ModelUser;
+import 'package:h/utils/internet_verify.dart';
+import 'package:h/utils/notification_snack_bar.dart';
+
 class LoginController extends GetxController {
-  final _internetController = Internet();
+  final _internet = Internet();
 
-  RxList<Usuario> usuarioLogado = RxList<Usuario>();
+  RxList<ModelUser.User> userLogged = RxList<ModelUser.User>();
 
-  RxString imagemCapa = ''.obs;
-  RxString imagemUsuario = ''.obs;
-
-  RxBool imgCapaAtualizada = RxBool(false);
-  RxBool imgUsuarioAtualizada = RxBool(false);
+  final UserApi _userApi = UserApi();
 
   late Reference _storageRef;
+  RxString coverImage = ''.obs;
+  RxString userImage = ''.obs;
 
-  final UsuarioApi _usuarioApi = UsuarioApi();
+  RxBool updatedCoverImage = RxBool(false);
+  RxBool updatedUserImage = RxBool(false);
+  late BuildContext context;
 
-  carregarImagens() async {
+  //Verifica se as imagens baixadas no celular são a última versão que o usuário salvou
+  //como imagem de capa e de usuário, caso não seja ele baixa a ultima imagem e armazena
+  //localmente, fazendo com que economize requisições no firestore.
+  loadImages() async {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      int attCapa = prefs.getInt("capaAtualizado") ?? 0;
-      int attUsuario = prefs.getInt("usuarioAtualizado") ?? 0;
+      int attCover = prefs.getInt("updatedCover") ?? 0;
+      int attUser = prefs.getInt("updatedUser") ?? 0;
 
       String ref = '';
       String storagePath = '';
@@ -39,109 +46,141 @@ class LoginController extends GetxController {
       Directory storageDir = await getApplicationDocumentsDirectory();
       storagePath = storageDir.path;
 
-      if (attCapa != usuarioLogado.first.imagemCapaAtualizado) {
-        imagemCapa.value = '';
+      if (attCover != userLogged.first.updatedCoverImage) {
+        coverImage.value = '';
 
-        ref = 'capa/${usuarioLogado.first.id!}.jpeg';
+        ref = 'COVER/${userLogged.first.id!}.jpeg';
         _storageRef = FirebaseStorage.instance.ref().child(ref);
 
-        Uint8List? capaData = await _storageRef.getData();
+        Uint8List? coverData = await _storageRef.getData();
 
-        String capaFileName = 'capa_${DateTime.now()}.jpeg';
-        String capaFilePath = '$storagePath/$capaFileName';
+        String coverFileName = 'cover_${DateTime.now()}.jpeg';
+        String coverFilePath = '$storagePath/$coverFileName';
 
-        if (await File(capaFilePath).exists()) {
-          await File(capaFilePath).delete();
+        if (await File(coverFilePath).exists()) {
+          await File(coverFilePath).delete();
         }
 
-        await File(capaFilePath).writeAsBytes(capaData!);
+        await File(coverFilePath).writeAsBytes(coverData!);
 
-        imagemCapa.value = capaFilePath;
-        imgCapaAtualizada.value = !imgCapaAtualizada.value;
+        coverImage.value = coverFilePath;
+        updatedCoverImage.value = !updatedCoverImage.value;
         await SharedPreferences.getInstance().then((prefs) {
-          prefs.setString('capa', capaFilePath);
+          prefs.setString('cover', coverFilePath);
         });
 
         await SharedPreferences.getInstance().then((prefs) {
-          prefs.setInt(
-              'capaAtualizado', usuarioLogado.first.imagemCapaAtualizado);
+          prefs.setInt('updatedCover', userLogged.first.updatedCoverImage);
         });
       } else {
-        imagemCapa.value = prefs.getString("capa") ?? '';
+        coverImage.value = prefs.getString("capa") ?? '';
       }
 
-      if (attUsuario != usuarioLogado.first.imagemUsuarioAtualizado) {
-        imagemUsuario.value = '';
+      if (attUser != userLogged.first.updatedUserImage) {
+        userImage.value = '';
 
-        ref = 'usuario/${usuarioLogado.first.id!}.jpeg';
+        ref = 'USER/${userLogged.first.id!}.jpeg';
         _storageRef = FirebaseStorage.instance.ref().child(ref);
 
-        Uint8List? usuarioData = await _storageRef.getData();
+        Uint8List? userData = await _storageRef.getData();
 
-        String usuarioFileName = 'usuario_${DateTime.now()}.jpeg';
-        String usuarioFilePath = '$storagePath/$usuarioFileName';
+        String userFileName = 'user_${DateTime.now()}.jpeg';
+        String userFilePath = '$storagePath/$userFileName';
 
-        if (usuarioData!.isNotEmpty) {
-          if (await File(usuarioFilePath).exists()) {
-            File(usuarioFilePath).deleteSync(recursive: true);
+        if (userData!.isNotEmpty) {
+          if (await File(userFilePath).exists()) {
+            File(userFilePath).deleteSync(recursive: true);
           }
 
-          await File(usuarioFilePath).writeAsBytes(usuarioData);
+          await File(userFilePath).writeAsBytes(userData);
 
-          imagemUsuario.value = usuarioFilePath;
-          imgUsuarioAtualizada.value = !imgUsuarioAtualizada.value;
+          userImage.value = userFilePath;
+          updatedUserImage.value = !updatedUserImage.value;
           await SharedPreferences.getInstance().then((prefs) {
-            prefs.setString('usuario', usuarioFilePath);
+            prefs.setString('user', userFilePath);
           });
           await SharedPreferences.getInstance().then((prefs) {
-            prefs.setInt('usuarioAtualizado',
-                usuarioLogado.first.imagemUsuarioAtualizado);
+            prefs.setInt('updatedUser', userLogged.first.updatedUserImage);
           });
         }
       } else {
-        imagemUsuario.value = prefs.getString("usuario") ?? '';
+        userImage.value = prefs.getString("user") ?? '';
       }
     } catch (error) {
-      print('Erro ao carregar imagens: $error');
+      NotificationSnackbar.showError(context, error.toString());
     }
   }
 
+  //Autentica o usuário no 'firebase auth', caso de certo ele procura o usuário no
+  //banco de dados pelo UID e salva seus dados para logar automaticamente das próximas vezes.
   Future<bool> login(
     String emailUser,
-    String senhaUser,
+    String passwordUser,
     BuildContext? context,
   ) async {
-    if (context != null &&
-        !await _internetController.verificaConexao(context)) {
+    if (context != null && !await _internet.checkConnection(context)) {
       return false;
     }
     try {
-      usuarioLogado.clear();
+      userLogged.clear();
       final usu = await FirebaseAuth.instance
-          .signInWithEmailAndPassword(email: emailUser, password: senhaUser);
+          .signInWithEmailAndPassword(email: emailUser, password: passwordUser);
       if (usu.user != null) {
-        Usuario user = await _usuarioApi.buscaPorUId(usu.user!.uid);
+        ModelUser.User user = await _userApi.searchByUId(usu.user!.uid);
 
         await SharedPreferences.getInstance().then((prefs) {
-          prefs.setBool('salvarAcesso', true);
+          prefs.setBool('saveAccess', true);
         });
         await SharedPreferences.getInstance().then((prefs) {
           prefs.setString('email', emailUser);
         });
         await SharedPreferences.getInstance().then((prefs) {
-          prefs.setString('senha', senhaUser);
+          prefs.setString('password', passwordUser);
         });
 
-        usuarioLogado.add(user);
-        await carregarImagens();
+        userLogged.add(user);
+        await loadImages();
         return true;
       }
       return false;
     } on FirebaseException catch (e) {
       if (context != null) {
-        // ignore: use_build_context_synchronously
-        NotificationSnackbar.showError(context, e.message.toString());
+        NotificationSnackbar.showError(
+          context,
+          e.message ?? 'Ocorreu algum erro.',
+        );
       }
+      return false;
+    }
+  }
+
+  //Sai do usuário pelo 'firebase auth' e logo em seguida remove as informações
+  //para não conectar automaticamente nas próximas seções.
+  Future<bool> logoff(
+    BuildContext context,
+  ) async {
+    if (!await _internet.checkConnection(context)) {
+      return false;
+    }
+    try {
+      await FirebaseAuth.instance.signOut();
+
+      await SharedPreferences.getInstance().then((prefs) {
+        prefs.setBool('saveAccess', false);
+      });
+      await SharedPreferences.getInstance().then((prefs) {
+        prefs.setString('email', '');
+      });
+      await SharedPreferences.getInstance().then((prefs) {
+        prefs.setString('password', '');
+      });
+      return true;
+    } on FirebaseException catch (e) {
+      NotificationSnackbar.showError(
+        context,
+        e.message ?? 'Ocorreu algum erro.',
+      );
+
       return false;
     }
   }

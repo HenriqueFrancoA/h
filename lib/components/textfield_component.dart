@@ -1,38 +1,42 @@
 import 'package:flutter/material.dart';
 
 class TextFieldComponent extends StatelessWidget {
-  final String labelText;
+  final String? labelText;
+  final String? hintText;
   final TextEditingController? controller;
   final double? width;
-  final double? height;
   final bool? obscureText;
   final Color? color;
   final int? maxLength;
+  final FocusNode? focusNode;
+  final Function(String)? onSubmitted;
 
   const TextFieldComponent({
     super.key,
-    required this.labelText,
+    this.labelText,
     this.controller,
     this.width,
-    this.height,
     this.obscureText,
     this.color,
     this.maxLength,
+    this.focusNode,
+    this.hintText,
+    this.onSubmitted,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: height ?? 60,
       width: width ?? 55,
-      padding: const EdgeInsets.only(top: 5),
       decoration: BoxDecoration(
         color: color ?? Theme.of(context).colorScheme.onSecondary,
         borderRadius: BorderRadius.circular(5),
       ),
       child: TextField(
-        style: Theme.of(context).textTheme.labelMedium,
+        focusNode: focusNode,
+        style: Theme.of(context).textTheme.labelSmall,
         maxLength: maxLength,
+        maxLines: 1,
         obscureText: obscureText ?? false,
         decoration: InputDecoration(
           labelText: labelText,
@@ -40,9 +44,15 @@ class TextFieldComponent extends StatelessWidget {
                 color: Colors.grey,
               ),
           border: const OutlineInputBorder(borderSide: BorderSide.none),
+          hintText: hintText,
+          hintStyle: Theme.of(context).textTheme.labelMedium!.copyWith(
+                color: Colors.grey,
+              ),
         ),
+        textAlignVertical: TextAlignVertical.center,
         controller: controller,
         cursorColor: Colors.white,
+        onSubmitted: onSubmitted,
       ),
     );
   }

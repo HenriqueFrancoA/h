@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class CustomButton extends MaterialButton {
-  CustomButton({
+class CustomButtonComponent extends MaterialButton {
+  CustomButtonComponent({
     Key? key,
     required VoidCallback onPressed,
     String? text,

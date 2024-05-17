@@ -1,13 +1,12 @@
-import 'dart:io';
-
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:sizer/sizer.dart';
+
+import 'package:h/components/animated_bar_component.dart';
 import 'package:h/components/bottom_bar_component.dart';
 import 'package:h/components/card_post_component.dart';
-import 'package:h/controllers/login_controller.dart';
-import 'package:h/controllers/publicacao_controller.dart';
-import 'package:sizer/sizer.dart';
+import 'package:h/components/container_background_component.dart';
+import 'package:h/controllers/publication_controller.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -17,18 +16,39 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  RxBool mostrarBarra = RxBool(true);
-  double scrollPosition = 0.0;
+  RxBool showBar = RxBool(true);
   double prevScrollPosition = 0.0;
 
-  final loginController = Get.put(LoginController());
-  final publicacaoController = Get.put(PublicacaoController());
+  final _publicationController = Get.put(PublicationController());
 
-  int pagina = 1;
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_scrollListener);
+    _publicationController.searchAll(null, context);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _scrollListener() {
+    final scrollDirection =
+        _scrollController.position.pixels - prevScrollPosition;
+    if (scrollDirection > 0) {
+      showBar.value = false;
+    } else {
+      showBar.value = true;
+    }
+    prevScrollPosition = _scrollController.position.pixels;
+  }
+
+  Future<void> _refresh() async {
+    _publicationController.searchAll(null, context);
   }
 
   @override
@@ -37,69 +57,64 @@ class _HomeScreenState extends State<HomeScreen> {
       canPop: false,
       child: Scaffold(
         backgroundColor: Theme.of(context).colorScheme.primary,
-        body: NotificationListener<ScrollUpdateNotification>(
-          onNotification: (notification) {
-            scrollPosition = notification.metrics.pixels;
-            final scrollDirection = scrollPosition - prevScrollPosition;
-            if (scrollDirection > 0) {
-              mostrarBarra.value = false;
-            } else {
-              mostrarBarra.value = true;
-            }
-            prevScrollPosition = scrollPosition;
-            return false;
-          },
-          child: Container(
-            width: 100.w,
-            height: 100.h,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Theme.of(context).colorScheme.background,
-                  Theme.of(context).colorScheme.onBackground,
-                ],
-              ),
-            ),
-            child: Stack(
-              children: [
-                FutureBuilder(
-                    future: publicacaoController.buscarTodas(null, context),
-                    builder: (context, snapshot) {
-                      return SizedBox(
-                        width: 100.w,
-                        height: 100.h,
-                        child: ListView.separated(
-                          itemCount: snapshot.data != null
-                              ? snapshot.data!.length + 1
-                              : 0,
+        body: ContainerBackgroundComponent(
+          widget: Stack(
+            children: [
+              RefreshIndicator(
+                onRefresh: _refresh,
+                backgroundColor: Colors.white,
+                child: Obx(
+                  () => _publicationController.listPublication.isNotEmpty
+                      ? ListView.separated(
+                          controller: _scrollController,
+                          itemCount:
+                              _publicationController.listPublication.length + 2,
                           itemBuilder: (context, index) {
                             index = index - 1;
 
-                            if (index == snapshot.data!.length - 1) {
-                              pagina++;
-
-                              return SizedBox(
-                                height: 50.h,
-                                child: const Center(
-                                  child: CircularProgressIndicator(
-                                    color: Colors.white,
-                                  ),
-                                ),
+                            if (index ==
+                                _publicationController.listPublication.length) {
+                              if (_publicationController.finalList.isFalse) {
+                                _publicationController.searchAll(
+                                    _publicationController
+                                        .listPublication[index - 1],
+                                    context);
+                              }
+                              return FutureBuilder(
+                                future:
+                                    Future.delayed(const Duration(seconds: 3)),
+                                builder: (context, snapshot) {
+                                  if (snapshot.connectionState ==
+                                      ConnectionState.waiting) {
+                                    return Container(
+                                      height: 15.h,
+                                      padding: const EdgeInsets.all(5),
+                                      child: const Align(
+                                        alignment: Alignment.topCenter,
+                                        child: CircularProgressIndicator(
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    );
+                                  } else {
+                                    return Container(
+                                      height: 15.h,
+                                    );
+                                  }
+                                },
                               );
                             }
-
                             return index < 0
                                 ? SizedBox(
                                     height: 10.h,
                                   )
                                 : CardPostComponent(
-                                    publicacao: snapshot.data![index],
-                                    compartilhado: false,
-                                    telaResposta: false,
-                                    respondendoDireto: false,
-                                    respondendoPublicacao: false,
+                                    publication: _publicationController
+                                        .listPublication[index],
+                                    sharing: false,
+                                    replyScreen: false,
+                                    replyDirectly: false,
+                                    replyPublication: false,
                                     contador: 0,
                                   );
                           },
@@ -110,98 +125,28 @@ class _HomeScreenState extends State<HomeScreen> {
                                   height: 0.5,
                                   color: Colors.grey,
                                 ),
-                        ),
-                      );
-                    }),
-                Obx(
-                  () => AnimatedOpacity(
-                    opacity: mostrarBarra.isTrue ? 1.0 : 0.0,
-                    duration: const Duration(milliseconds: 200),
-                    child: Container(
-                      width: 100.w,
-                      height: 10.h,
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.background,
-                        border: const Border(
-                          bottom: BorderSide(
-                            color: Colors.grey,
-                            width: 0.5,
-                          ),
-                        ),
-                      ),
-                      padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          GestureDetector(
-                            onTap: () => Get.offNamed(
-                              '/perfil/${loginController.usuarioLogado.first.id}',
-                              arguments: {
-                                'usuario': null,
-                              },
-                            ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(50),
-                              child: loginController
-                                      .usuarioLogado.first.imagemUsuario
-                                  ? Image(
-                                      width: 30,
-                                      height: 30,
-                                      fit: BoxFit.cover,
-                                      image: ResizeImage(
-                                        FileImage(
-                                          File(loginController
-                                              .imagemUsuario.value),
-                                        ),
-                                        width: 156,
-                                        height: 275,
-                                      ),
-                                    )
-                                  : const Image(
-                                      width: 30,
-                                      height: 30,
-                                      fit: BoxFit.cover,
-                                      image: ResizeImage(
-                                        AssetImage(
-                                          "assets/images/perfil.png",
-                                        ),
-                                        width: 130,
-                                        height: 240,
-                                      ),
-                                    ),
-                            ),
-                          ),
-                          SizedBox(
-                            width: 30,
-                            child: Image.asset(
-                              "assets/images/logoBranco.png",
-                            ),
-                          ),
-                          GestureDetector(
-                            onTap: () => Get.toNamed(
-                              '/publicar',
-                              arguments: {
-                                'comentando': null,
-                                'compartilhando': null,
-                              },
-                            ),
-                            child: const Icon(
-                              CupertinoIcons.add,
-                              color: Colors.white,
-                              size: 30,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
+                        )
+                      : Container(),
                 ),
-                BottomBarComponent(
-                  mostrarBarra: mostrarBarra,
-                  index: 0,
+              ),
+              AnimatedBarComponent(
+                showBar: showBar,
+                getBack: false,
+                hasFocus: false,
+                searched: false,
+                onTapPublish: () => Get.toNamed(
+                  '/publish',
+                  arguments: {
+                    'commenting': null,
+                    'sharing': null,
+                  },
                 ),
-              ],
-            ),
+              ),
+              BottomBarComponent(
+                showBar: showBar,
+                index: 0,
+              ),
+            ],
           ),
         ),
       ),
