@@ -69,6 +69,7 @@ class _PublicationScreenState extends State<PublicationScreen> {
       keyboardOpen.value = _textFieldFocus.hasFocus;
     });
     checkLike();
+    checkRelation(false);
     getUrls();
   }
 
@@ -109,13 +110,14 @@ class _PublicationScreenState extends State<PublicationScreen> {
     });
   }
 
-  checkFollow() async {
+  Future<bool> checkRelation(bool createDelete) async {
     following.value = await _relationController.checkHasRelation(
-      following: publication.user,
-      user: _loginController.userLogged.first,
-      createDelete: false,
+      following: _loginController.userLogged.first,
+      user: publication.user,
+      createDelete: createDelete,
       context: context,
     );
+    return following.value;
   }
 
   checkLike() async {
@@ -270,94 +272,89 @@ class _PublicationScreenState extends State<PublicationScreen> {
                                         ),
                                   ),
                                   const Spacer(),
-                                  publication.user.userName !=
-                                          _loginController
-                                              .userLogged.first.userName
-                                      ? CustomButtonComponent(
-                                          onPressed: () async {
-                                            bool retorno =
-                                                await _relationController
-                                                    .checkHasRelation(
-                                              following: publication.user,
-                                              user: _loginController
-                                                  .userLogged.first,
-                                              createDelete: true,
-                                              context: context,
-                                            );
-                                            if (retorno) {
-                                              following.value =
-                                                  !following.value;
-                                            }
-                                          },
-                                          context: context,
-                                          text: following.isTrue
-                                              ? 'following'
-                                              : 'follow',
-                                          fontSize: 11,
-                                          color: following.value
-                                              ? Theme.of(context)
-                                                  .colorScheme
-                                                  .secondary
-                                              : Theme.of(context)
-                                                  .colorScheme
-                                                  .onSecondary,
-                                        )
-                                      : publication.disabled
-                                          ? Container()
-                                          : PopupMenuButton<String>(
-                                              color: Theme.of(context)
-                                                  .colorScheme
-                                                  .secondary,
-                                              itemBuilder:
-                                                  (BuildContext context) =>
-                                                      <PopupMenuEntry<String>>[
-                                                PopupMenuItem<String>(
-                                                  child: GestureDetector(
-                                                    onTap: () =>
-                                                        _publicationController
-                                                            .delete(
-                                                      publication,
-                                                      context,
-                                                    )
-                                                            .then(
-                                                      (response) {
-                                                        if (response) {
-                                                          Get.back();
-                                                          Get.back();
-                                                        }
-                                                      },
-                                                    ),
-                                                    child: Row(
-                                                      children: [
-                                                        const Icon(
-                                                          Icons
-                                                              .delete_outline_outlined,
-                                                          color: Colors.red,
-                                                          size: 13,
-                                                        ),
-                                                        SizedBox(width: 2.w),
-                                                        Text(
-                                                          'Excluir',
-                                                          style:
-                                                              Theme.of(context)
-                                                                  .textTheme
-                                                                  .labelSmall!
-                                                                  .copyWith(
-                                                                    color: Colors
-                                                                        .red,
-                                                                  ),
-                                                        ),
-                                                      ],
+                                  Obx(
+                                    () => publication.user.userName !=
+                                            _loginController
+                                                .userLogged.first.userName
+                                        ? CustomButtonComponent(
+                                            onPressed: () async {
+                                              bool retorno =
+                                                  await checkRelation(true);
+                                              if (retorno) {
+                                                following.value =
+                                                    !following.value;
+                                              }
+                                            },
+                                            context: context,
+                                            text: following.isTrue
+                                                ? 'following'
+                                                : 'follow',
+                                            fontSize: 11,
+                                            color: following.value
+                                                ? Theme.of(context)
+                                                    .colorScheme
+                                                    .secondary
+                                                : Theme.of(context)
+                                                    .colorScheme
+                                                    .onSecondary,
+                                          )
+                                        : publication.disabled
+                                            ? Container()
+                                            : PopupMenuButton<String>(
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .secondary,
+                                                itemBuilder: (BuildContext
+                                                        context) =>
+                                                    <PopupMenuEntry<String>>[
+                                                  PopupMenuItem<String>(
+                                                    child: GestureDetector(
+                                                      onTap: () =>
+                                                          _publicationController
+                                                              .delete(
+                                                        publication,
+                                                        context,
+                                                      )
+                                                              .then(
+                                                        (response) {
+                                                          if (response) {
+                                                            Get.back();
+                                                            Get.back();
+                                                          }
+                                                        },
+                                                      ),
+                                                      child: Row(
+                                                        children: [
+                                                          const Icon(
+                                                            Icons
+                                                                .delete_outline_outlined,
+                                                            color: Colors.red,
+                                                            size: 13,
+                                                          ),
+                                                          SizedBox(width: 2.w),
+                                                          Text(
+                                                            'Excluir',
+                                                            style: Theme.of(
+                                                                    context)
+                                                                .textTheme
+                                                                .labelSmall!
+                                                                .copyWith(
+                                                                  color: Colors
+                                                                      .red,
+                                                                ),
+                                                          ),
+                                                        ],
+                                                      ),
                                                     ),
                                                   ),
+                                                ],
+                                                child: const Icon(
+                                                  CupertinoIcons
+                                                      .ellipsis_vertical,
+                                                  color: Colors.white,
                                                 ),
-                                              ],
-                                              child: const Icon(
-                                                CupertinoIcons
-                                                    .ellipsis_vertical,
-                                                color: Colors.white,
                                               ),
-                                            ),
+                                  ),
                                 ],
                               ),
                               SizedBox(height: 1.h),

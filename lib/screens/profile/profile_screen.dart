@@ -66,7 +66,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         uId: user!.uId,
         email: user!.email,
         userName: user!.userName,
-        password: user!.password,
         biography: user!.biography,
         location: user!.location,
         telephone: user!.telephone,
@@ -81,14 +80,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
         disabled: user!.disabled,
       );
       getUrls();
-      checkFollow();
+      checkRelation(false);
     } else {
       userProfile = User(
         id: _loginController.userLogged.first.id,
         uId: _loginController.userLogged.first.uId,
         email: _loginController.userLogged.first.email,
         userName: _loginController.userLogged.first.userName,
-        password: _loginController.userLogged.first.password,
         biography: _loginController.userLogged.first.biography,
         location: _loginController.userLogged.first.location,
         telephone: _loginController.userLogged.first.telephone,
@@ -106,13 +104,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _publicationController.searchByUser(null, userProfile!, context);
   }
 
-  checkFollow() async {
+  Future<bool> checkRelation(bool createDelete) async {
     following.value = await _relationController.checkHasRelation(
-      following: user!,
-      user: _loginController.userLogged.first,
-      createDelete: false,
+      following: _loginController.userLogged.first,
+      user: user!,
+      createDelete: createDelete,
       context: context,
     );
+    return following.value;
   }
 
   void getUrls() async {
@@ -351,14 +350,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                             () => CustomButtonComponent(
                                               onPressed: () async {
                                                 bool retorno =
-                                                    await _relationController
-                                                        .checkHasRelation(
-                                                  following: user!,
-                                                  user: _loginController
-                                                      .userLogged.first,
-                                                  createDelete: true,
-                                                  context: context,
-                                                );
+                                                    await checkRelation(true);
                                                 if (retorno) {
                                                   following.value =
                                                       !following.value;

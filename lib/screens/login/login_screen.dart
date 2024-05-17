@@ -145,26 +145,26 @@ class _LoginScreenState extends State<LoginScreen> {
                       color: Colors.grey[400],
                     ),
                     SizedBox(height: 4.h),
-                    Container(
-                      width: 85.w,
-                      height: 50,
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: const Color.fromARGB(255, 234, 67, 53),
-                          width: 2,
-                        ),
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                      child: CustomButtonComponent(
-                        onPressed: () {},
-                        color: Colors.white,
-                        context: context,
-                        text: 'g',
-                        fontSize: 20,
-                        textColor: const Color.fromARGB(255, 234, 67, 53),
-                      ),
-                    ),
-                    SizedBox(height: 2.h),
+                    // Container(
+                    //   width: 85.w,
+                    //   height: 50,
+                    //   decoration: BoxDecoration(
+                    //     border: Border.all(
+                    //       color: const Color.fromARGB(255, 234, 67, 53),
+                    //       width: 2,
+                    //     ),
+                    //     borderRadius: BorderRadius.circular(5),
+                    //   ),
+                    //   child: CustomButtonComponent(
+                    //     onPressed: () {},
+                    //     color: Colors.white,
+                    //     context: context,
+                    //     text: 'g',
+                    //     fontSize: 20,
+                    //     textColor: const Color.fromARGB(255, 234, 67, 53),
+                    //   ),
+                    // ),
+                    // SizedBox(height: 2.h),
                   ],
                 ),
               ),

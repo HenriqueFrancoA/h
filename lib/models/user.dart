@@ -7,7 +7,6 @@ class User extends Object {
   late String email;
   late String userName;
   String? telephone;
-  late String password;
   late Timestamp dateBirth;
   late Timestamp creationDate;
   String? biography;
@@ -26,7 +25,6 @@ class User extends Object {
     required this.email,
     required this.userName,
     this.telephone,
-    required this.password,
     required this.dateBirth,
     required this.creationDate,
     this.biography,
@@ -48,7 +46,6 @@ class User extends Object {
       email: data['EMAIL'],
       userName: data['USER_NAME'],
       telephone: data['TELEPHONE'],
-      password: data['PASSWORD'],
       dateBirth: data['DATE_BIRTH'],
       creationDate: data['CREATION_DATE'],
       biography: data['BIOGRAPHY'],
@@ -68,13 +65,12 @@ class User extends Object {
     email = json['EMAIL'] ?? '';
     userName = json['USER_NAME'] ?? '';
     telephone = json['TELEPHONE'];
-    password = json['PASSWORD'] ?? '';
     dateBirth = json['DATE_BIRTH'] ?? Timestamp.now();
     creationDate = json['CREATION_DATE'] ?? Timestamp.now();
     biography = json['BIOGRAPHY'];
     location = json['LOCATION'];
-    followers = json['FOLLOWERS'] ?? 0;
-    following = json['FOLLOWING'] ?? 0;
+    followers = RxInt(json['FOLLOWERS']);
+    following = RxInt(json['FOLLOWING']);
     userImage = json['USER_IMAGE'] ?? false;
     updatedUserImage = json['UPDATED_USER_IMAGE'] ?? 0;
     coverImage = json['COVER_IMAGE'] ?? false;
@@ -88,7 +84,6 @@ class User extends Object {
     data['EMAIL'] = email;
     data['USER_NAME'] = userName;
     data['TELEPHONE'] = telephone;
-    data['PASSWORD'] = password;
     data['DATE_BIRTH'] = dateBirth;
     data['CREATION_DATE'] = creationDate;
     data['BIOGRAPHY'] = biography;

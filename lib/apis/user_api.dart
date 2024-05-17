@@ -121,11 +121,10 @@ class UserApi implements Api {
     documentRef.update({
       "USER_NAME": user.userName,
       'TELEPHONE': user.telephone,
-      'DATE_BIRTH': user.dateBirth,
       'BIOGRAPHY': user.biography,
       'LOCATION': user.location,
-      'FOLLOWERS': user.followers,
-      'FOLLOWING': user.following,
+      'FOLLOWERS': user.followers.value,
+      'FOLLOWING': user.following.value,
       'USER_IMAGE': user.userImage,
       'UPDATED_USER_IMAGE': user.updatedUserImage,
       'COVER_IMAGE': user.coverImage,

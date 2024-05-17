@@ -63,7 +63,6 @@ class UserController extends GetxController {
         uId: credential.user!.uid,
         email: email,
         userName: userName,
-        password: password,
         telephone: telephone,
         dateBirth: dateBirth,
         creationDate: Timestamp.now(),
@@ -131,7 +130,7 @@ class UserController extends GetxController {
         user.updatedCoverImage++;
         await uploadImage(
           pathInput: coverImg.path,
-          pathExit: "COVER/${_loginController.userLogged.first}",
+          pathExit: "COVER/${_loginController.userLogged.first.id}",
           user: _loginController.userLogged.first,
           context: context,
         );
@@ -140,7 +139,7 @@ class UserController extends GetxController {
         user.updatedUserImage++;
         await uploadImage(
           pathInput: userImg.path,
-          pathExit: "USER/${_loginController.userLogged.first}",
+          pathExit: "USER/${_loginController.userLogged.first.id}",
           user: _loginController.userLogged.first,
           context: context,
         );

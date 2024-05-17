@@ -73,7 +73,7 @@ class LoginController extends GetxController {
           prefs.setInt('updatedCover', userLogged.first.updatedCoverImage);
         });
       } else {
-        coverImage.value = prefs.getString("capa") ?? '';
+        coverImage.value = prefs.getString("cover") ?? '';
       }
 
       if (attUser != userLogged.first.updatedUserImage) {

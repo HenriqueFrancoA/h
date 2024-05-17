@@ -36,12 +36,23 @@ class _CardUserComponentState extends State<CardUserComponent> {
   void initState() {
     super.initState();
     pegarUrl();
+    checkRelation(false);
   }
 
-  void pegarUrl() async {
+  pegarUrl() async {
     if (widget.user.userImage) {
       userImgURL.value = await downloadImages("USER/${widget.user.id}.jpeg");
     }
+  }
+
+  Future<bool> checkRelation(bool createDelete) async {
+    following.value = await _relationController.checkHasRelation(
+      following: _loginController.userLogged.first,
+      user: widget.user,
+      createDelete: createDelete,
+      context: context,
+    );
+    return following.value;
   }
 
   @override
@@ -131,13 +142,7 @@ class _CardUserComponentState extends State<CardUserComponent> {
                     child: Obx(
                       () => CustomButtonComponent(
                         onPressed: () async {
-                          bool retorno =
-                              await _relationController.checkHasRelation(
-                            following: widget.user,
-                            user: _loginController.userLogged.first,
-                            createDelete: true,
-                            context: context,
-                          );
+                          bool retorno = await checkRelation(true);
                           if (retorno) {
                             following.value = !following.value;
                           }
