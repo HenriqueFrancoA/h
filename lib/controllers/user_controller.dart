@@ -120,7 +120,7 @@ class UserController extends GetxController {
 
     if (userName != null && userName != user.userName) {
       if (await checkUserName(userName, context)) {
-        userName = user.userName;
+        user.userName = userName;
       } else {
         return false;
       }
@@ -147,6 +147,21 @@ class UserController extends GetxController {
       bool updatedUser = await _userApi.update(user);
 
       if (updatedUser) {
+        Future.delayed(
+          const Duration(seconds: 2),
+          () async {
+            _publicationController.searchAll(
+              null,
+              context,
+            );
+
+            _publicationController.searchByUser(
+              null,
+              user,
+              context,
+            );
+          },
+        );
         return true;
       } else {
         NotificationSnackbar.showError(context,

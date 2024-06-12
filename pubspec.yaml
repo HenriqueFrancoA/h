@@ -2,7 +2,7 @@ name: h
 description: "A new Flutter project."
 publish_to: 'none'
 
-version: 1.0.0+1
+version: 1.0.1+1
 
 environment:
   sdk: '>=3.2.1 <4.0.0'
@@ -28,6 +28,7 @@ dependencies:
   flutter_datetime_picker_plus: ^2.1.0
   connectivity_plus: ^5.0.2
   flutter_cache_manager: ^3.3.1
+  url_launcher: ^6.2.6
 
 dev_dependencies:
   flutter_test:

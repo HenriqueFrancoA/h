@@ -45,7 +45,10 @@ class PublicationController extends GetxController {
       return false;
     }
     try {
-      if ((text == null && !image) || text != null && text.isEmpty && !image) {
+      if (text != null) {
+        text = text.trim();
+      }
+      if ((text == null || text.isEmpty) && !image) {
         NotificationSnackbar.showError(
           context,
           'Escreva algo ou anexe uma imagem.',

@@ -29,7 +29,7 @@ class LoginController extends GetxController {
 
   RxBool updatedCoverImage = RxBool(false);
   RxBool updatedUserImage = RxBool(false);
-  late BuildContext context;
+  late BuildContext lateContext;
 
   //Verifica se as imagens baixadas no celular são a última versão que o usuário salvou
   //como imagem de capa e de usuário, caso não seja ele baixa a ultima imagem e armazena
@@ -107,7 +107,7 @@ class LoginController extends GetxController {
         userImage.value = prefs.getString("user") ?? '';
       }
     } catch (error) {
-      NotificationSnackbar.showError(context, error.toString());
+      NotificationSnackbar.showError(lateContext, error.toString());
     }
   }
 
@@ -155,7 +155,7 @@ class LoginController extends GetxController {
   }
 
   //Sai do usuário pelo 'firebase auth' e logo em seguida remove as informações
-  //para não conectar automaticamente nas próximas seções.
+  //para não se conectar automaticamente nas próximas seções.
   Future<bool> logoff(
     BuildContext context,
   ) async {
@@ -174,6 +174,28 @@ class LoginController extends GetxController {
       await SharedPreferences.getInstance().then((prefs) {
         prefs.setString('password', '');
       });
+      return true;
+    } on FirebaseException catch (e) {
+      NotificationSnackbar.showError(
+        context,
+        e.message ?? 'Ocorreu algum erro.',
+      );
+
+      return false;
+    }
+  }
+
+  //Envia um email para o endereço fornecido pelo usuário caso o mesmo exista.
+  Future<bool> recoveryPassword(
+    String email,
+    BuildContext context,
+  ) async {
+    if (!await _internet.checkConnection(context)) {
+      return false;
+    }
+    try {
+      FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+
       return true;
     } on FirebaseException catch (e) {
       NotificationSnackbar.showError(

@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:get/get.dart';
 import 'package:h/components/container_background_component.dart';
+import 'package:h/components/follow_button_component.dart';
 import 'package:h/components/user_default_image_component.dart';
 import 'package:intl/intl.dart';
 import 'package:sizer/sizer.dart';
@@ -36,6 +37,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   RxBool scrollable = RxBool(false);
   RxBool editProfile = RxBool(false);
   RxBool following = RxBool(false);
+  RxBool loadingRelation = RxBool(false);
 
   double scrollPosition = 0.0;
   double prevScrollPosition = 0.0;
@@ -104,13 +106,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _publicationController.searchByUser(null, userProfile!, context);
   }
 
-  Future<bool> checkRelation(bool createDelete) async {
-    following.value = await _relationController.checkHasRelation(
+  checkRelation(bool createDelete) async {
+    loadingRelation.value = true;
+    bool retorno = await _relationController.checkHasRelation(
       following: _loginController.userLogged.first,
       user: user!,
       createDelete: createDelete,
       context: context,
     );
+    if (retorno) {
+      loadingRelation.value = false;
+      return following.value = !following.value;
+    }
+    loadingRelation.value = false;
     return following.value;
   }
 
@@ -346,29 +354,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                 .colorScheme
                                                 .onSecondary,
                                           )
-                                        : Obx(
-                                            () => CustomButtonComponent(
-                                              onPressed: () async {
-                                                bool retorno =
-                                                    await checkRelation(true);
-                                                if (retorno) {
-                                                  following.value =
-                                                      !following.value;
-                                                }
-                                              },
-                                              context: context,
-                                              text: following.value
-                                                  ? 'following'
-                                                  : 'follow',
-                                              fontSize: 11,
-                                              color: following.value
-                                                  ? Theme.of(context)
-                                                      .colorScheme
-                                                      .secondary
-                                                  : Theme.of(context)
-                                                      .colorScheme
-                                                      .onSecondary,
-                                            ),
+                                        : FollowButtonComponent(
+                                            following: following,
+                                            checkRelation:
+                                                (createDelete) async =>
+                                                    await checkRelation(
+                                                        createDelete),
+                                            loadingRelation: loadingRelation,
                                           ),
                                   ],
                                 ),
@@ -653,7 +645,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 () => editProfile.isFalse
                     ? Container()
                     : EditProfileScreen(
-                        onTap: () => editProfile.value = false,
+                        onTap: () {
+                          editProfile.value = false;
+                          setState(
+                            () {
+                              userProfile = _loginController.userLogged.first;
+                            },
+                          );
+                        },
                       ),
               ),
             ],

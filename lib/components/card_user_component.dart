@@ -3,10 +3,10 @@ import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:h/components/follow_button_component.dart';
 import 'package:h/components/user_default_image_component.dart';
 import 'package:sizer/sizer.dart';
 
-import 'package:h/components/button_components.dart';
 import 'package:h/controllers/login_controller.dart';
 import 'package:h/controllers/relation_controller.dart';
 import 'package:h/models/user.dart';
@@ -28,6 +28,7 @@ class _CardUserComponentState extends State<CardUserComponent> {
   late RxString userImgURL = ''.obs;
 
   RxBool following = RxBool(false);
+  RxBool loadingRelation = RxBool(false);
 
   final _loginController = Get.put(LoginController());
   final _relationController = Get.put(RelationController());
@@ -45,13 +46,19 @@ class _CardUserComponentState extends State<CardUserComponent> {
     }
   }
 
-  Future<bool> checkRelation(bool createDelete) async {
-    following.value = await _relationController.checkHasRelation(
+  checkRelation(bool createDelete) async {
+    loadingRelation.value = true;
+    bool retorno = await _relationController.checkHasRelation(
       following: _loginController.userLogged.first,
       user: widget.user,
       createDelete: createDelete,
       context: context,
     );
+    if (retorno) {
+      loadingRelation.value = false;
+      return following.value = !following.value;
+    }
+    loadingRelation.value = false;
     return following.value;
   }
 
@@ -139,21 +146,11 @@ class _CardUserComponentState extends State<CardUserComponent> {
                 ? SizedBox(
                     width: 100,
                     height: 35,
-                    child: Obx(
-                      () => CustomButtonComponent(
-                        onPressed: () async {
-                          bool retorno = await checkRelation(true);
-                          if (retorno) {
-                            following.value = !following.value;
-                          }
-                        },
-                        context: context,
-                        text: following.value ? 'following' : 'follow',
-                        fontSize: 11,
-                        color: following.value
-                            ? Theme.of(context).colorScheme.secondary
-                            : Theme.of(context).colorScheme.onSecondary,
-                      ),
+                    child: FollowButtonComponent(
+                      following: following,
+                      checkRelation: (createDelete) async =>
+                          await checkRelation(createDelete),
+                      loadingRelation: loadingRelation,
                     ),
                   )
                 : Container(),

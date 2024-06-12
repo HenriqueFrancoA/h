@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:h/components/animated_bar_component.dart';
 import 'package:h/components/bottom_bar_component.dart';
-import 'package:h/components/button_config_component.dart';
+import 'package:h/components/config_button_component.dart';
 import 'package:h/components/circular_progress_component.dart';
 import 'package:h/components/container_background_component.dart';
 import 'package:h/controllers/login_controller.dart';
@@ -52,7 +52,7 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
                   child: Column(
                     children: [
                       SizedBox(height: 10.h),
-                      ButtonConfigComponent(
+                      ConfigButtonComponent(
                         text: 'Desativar conta',
                         onTap: () async {
                           loading.value = true;
@@ -66,7 +66,7 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
                           loading.value = false;
                         },
                       ),
-                      ButtonConfigComponent(
+                      ConfigButtonComponent(
                         text: 'Sair',
                         onTap: () async {
                           loading.value = true;

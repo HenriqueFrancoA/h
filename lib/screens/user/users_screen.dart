@@ -71,7 +71,7 @@ class _UsersScreenState extends State<UsersScreen> {
                                 height: 10.h,
                               )
                             : CardUserComponent(
-                                user: following
+                                user: !following
                                     ? _relationController
                                         .listRelation[index].following
                                     : _relationController

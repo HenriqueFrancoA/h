@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:h/components/follow_button_component.dart';
 import 'package:h/models/comment.dart';
 import 'package:intl/intl.dart';
 import 'package:sizer/sizer.dart';
@@ -40,6 +41,7 @@ class _PublicationScreenState extends State<PublicationScreen> {
   RxBool keyboardOpen = RxBool(false);
   RxBool liked = RxBool(false);
   RxBool following = RxBool(false);
+  RxBool loadingRelation = RxBool(false);
 
   RxDouble cardPostHeight = 0.0.obs;
   double scrollPosition = 0.0;
@@ -110,13 +112,19 @@ class _PublicationScreenState extends State<PublicationScreen> {
     });
   }
 
-  Future<bool> checkRelation(bool createDelete) async {
-    following.value = await _relationController.checkHasRelation(
+  checkRelation(bool createDelete) async {
+    loadingRelation.value = true;
+    bool retorno = await _relationController.checkHasRelation(
       following: _loginController.userLogged.first,
       user: publication.user,
       createDelete: createDelete,
       context: context,
     );
+    if (retorno) {
+      loadingRelation.value = false;
+      return following.value = !following.value;
+    }
+    loadingRelation.value = false;
     return following.value;
   }
 
@@ -183,37 +191,37 @@ class _PublicationScreenState extends State<PublicationScreen> {
                                           Column(
                                             children: [
                                               ClipRRect(
-                                                  borderRadius:
-                                                      BorderRadius.circular(50),
-                                                  child: !reply!.user.userImage
+                                                borderRadius:
+                                                    BorderRadius.circular(50),
+                                                child: Obx(
+                                                  () => !reply!.user.userImage
                                                       ? UserDefaultImageComponent()
-                                                      : Obx(
-                                                          () => userReplyImgUrl
-                                                                  .value.isEmpty
-                                                              ? Container(
-                                                                  width: 50,
-                                                                  height: 50,
-                                                                  color: Theme.of(
-                                                                          context)
-                                                                      .colorScheme
-                                                                      .onSecondary,
-                                                                )
-                                                              : Image(
-                                                                  width: 50,
-                                                                  height: 50,
-                                                                  fit: BoxFit
-                                                                      .cover,
-                                                                  image:
-                                                                      ResizeImage(
-                                                                    CachedNetworkImageProvider(
-                                                                      userReplyImgUrl
-                                                                          .value,
-                                                                    ),
-                                                                    width: 156,
-                                                                    height: 275,
-                                                                  ),
+                                                      : userReplyImgUrl
+                                                              .value.isEmpty
+                                                          ? Container(
+                                                              width: 50,
+                                                              height: 50,
+                                                              color: Theme.of(
+                                                                      context)
+                                                                  .colorScheme
+                                                                  .onSecondary,
+                                                            )
+                                                          : Image(
+                                                              width: 50,
+                                                              height: 50,
+                                                              fit: BoxFit.cover,
+                                                              image:
+                                                                  ResizeImage(
+                                                                CachedNetworkImageProvider(
+                                                                  userReplyImgUrl
+                                                                      .value,
                                                                 ),
-                                                        )),
+                                                                width: 156,
+                                                                height: 275,
+                                                              ),
+                                                            ),
+                                                ),
+                                              ),
                                               const SizedBox(
                                                 height: 5,
                                               ),
@@ -259,7 +267,30 @@ class _PublicationScreenState extends State<PublicationScreen> {
                                 children: [
                                   ClipRRect(
                                     borderRadius: BorderRadius.circular(50),
-                                    child: UserDefaultImageComponent(),
+                                    child: Obx(
+                                      () => !publication.user.userImage
+                                          ? UserDefaultImageComponent()
+                                          : userImgUrl.isEmpty
+                                              ? Container(
+                                                  width: 50,
+                                                  height: 50,
+                                                  color: Theme.of(context)
+                                                      .colorScheme
+                                                      .onSecondary,
+                                                )
+                                              : Image(
+                                                  width: 50,
+                                                  height: 50,
+                                                  fit: BoxFit.cover,
+                                                  image: ResizeImage(
+                                                    CachedNetworkImageProvider(
+                                                      userImgUrl.value,
+                                                    ),
+                                                    width: 156,
+                                                    height: 275,
+                                                  ),
+                                                ),
+                                    ),
                                   ),
                                   const SizedBox(width: 10),
                                   Text(
@@ -276,27 +307,13 @@ class _PublicationScreenState extends State<PublicationScreen> {
                                     () => publication.user.userName !=
                                             _loginController
                                                 .userLogged.first.userName
-                                        ? CustomButtonComponent(
-                                            onPressed: () async {
-                                              bool retorno =
-                                                  await checkRelation(true);
-                                              if (retorno) {
-                                                following.value =
-                                                    !following.value;
-                                              }
-                                            },
-                                            context: context,
-                                            text: following.isTrue
-                                                ? 'following'
-                                                : 'follow',
-                                            fontSize: 11,
-                                            color: following.value
-                                                ? Theme.of(context)
-                                                    .colorScheme
-                                                    .secondary
-                                                : Theme.of(context)
-                                                    .colorScheme
-                                                    .onSecondary,
+                                        ? FollowButtonComponent(
+                                            following: following,
+                                            checkRelation:
+                                                (createDelete) async =>
+                                                    await checkRelation(
+                                                        createDelete),
+                                            loadingRelation: loadingRelation,
                                           )
                                         : publication.disabled
                                             ? Container()

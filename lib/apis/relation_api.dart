@@ -50,7 +50,7 @@ class RelationApi implements Api {
   Future<List<Relation>> searchByFollower(User user) async {
     QuerySnapshot querySnapshot = await db
         .collection("RELATION")
-        .where("FOLLOWING", isEqualTo: db.doc("USER/${user.id}"))
+        .where("USER", isEqualTo: db.doc("USER/${user.id}"))
         .get();
 
     List<Relation>? listRelations = [];
@@ -66,7 +66,7 @@ class RelationApi implements Api {
   Future<List<Relation>> searchByFollowing(User user) async {
     QuerySnapshot querySnapshot = await db
         .collection("RELATION")
-        .where("USER", isEqualTo: db.doc("USER/${user.id}"))
+        .where("FOLLOWING", isEqualTo: db.doc("USER/${user.id}"))
         .get();
 
     List<Relation>? listRelations = [];

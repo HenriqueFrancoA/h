@@ -1,15 +1,17 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_datetime_picker_plus/flutter_datetime_picker_plus.dart';
 import 'package:get/get.dart';
-import 'package:h/components/container_background_component.dart';
 import 'package:intl/intl.dart';
 import 'package:sizer/sizer.dart';
 
+import 'package:h/components/container_background_component.dart';
 import 'package:h/components/button_components.dart';
 import 'package:h/components/textfield_component.dart';
 import 'package:h/controllers/user_controller.dart';
 import 'package:h/utils/notification_snack_bar.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -27,6 +29,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _dateBirthController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+
+  void _launchPrivacyPolicy() async {
+    const url = 'https://www.iubenda.com/privacy-policy/20491208';
+    await launchUrlString(url);
+  }
+
+  void _launchTerms() async {
+    const url = 'https://www.iubenda.com/privacy-policy/20491208';
+    await launchUrlString(url);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -192,9 +204,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                     text: "Li e Concordo com os ",
                                   ),
                                   TextSpan(
-                                    text: "termos e políticas de privacidade.",
+                                    text: "termos ",
                                     style:
                                         Theme.of(context).textTheme.labelMedium,
+                                    recognizer: TapGestureRecognizer()
+                                      ..onTap = _launchTerms,
+                                  ),
+                                  const TextSpan(
+                                    text: "e ",
+                                  ),
+                                  TextSpan(
+                                    text: "políticas de privacidade.",
+                                    style:
+                                        Theme.of(context).textTheme.labelMedium,
+                                    recognizer: TapGestureRecognizer()
+                                      ..onTap = _launchPrivacyPolicy,
                                   ),
                                 ],
                               ),

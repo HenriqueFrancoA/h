@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:sizer/sizer.dart';
 
-class ButtonConfigComponent extends StatefulWidget {
+class ConfigButtonComponent extends StatefulWidget {
   final String text;
   final VoidCallback onTap;
-  const ButtonConfigComponent({
+  const ConfigButtonComponent({
     super.key,
     required this.text,
     required this.onTap,
   });
 
   @override
-  State<ButtonConfigComponent> createState() => _ButtonConfigComponentState();
+  State<ConfigButtonComponent> createState() => _ConfigButtonComponentState();
 }
 
-class _ButtonConfigComponentState extends State<ButtonConfigComponent> {
+class _ConfigButtonComponentState extends State<ConfigButtonComponent> {
   @override
   Widget build(BuildContext context) {
     return Column(

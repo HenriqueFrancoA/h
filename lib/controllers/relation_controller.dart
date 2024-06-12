@@ -54,14 +54,15 @@ class RelationController extends GetxController {
 
       if (relationFound != null) {
         await _relationApi.delete(relationFound.id!);
-        user.following--;
-        await _userController.updateUser(
-          user: user,
-          context: context,
-        );
-        following.followers--;
+        following.following--;
+        user.followers--;
+
         await _userController.updateUser(
           user: following,
+          context: context,
+        );
+        await _userController.updateUser(
+          user: user,
           context: context,
         );
         return true;
@@ -73,12 +74,13 @@ class RelationController extends GetxController {
         bool response = await _relationApi.create(relationDto);
 
         if (response) {
-          user.following++;
+          following.following++;
+          user.followers++;
+
           await _userController.updateUser(
             user: user,
             context: context,
           );
-          following.followers++;
           await _userController.updateUser(
             user: following,
             context: context,
@@ -100,11 +102,11 @@ class RelationController extends GetxController {
     required bool following,
     required BuildContext context,
   }) async {
-    listRelation.clear();
     if (!await _internet.checkConnection(context)) {
       return listRelation;
     }
     try {
+      listRelation.clear();
       if (following) {
         listRelation.addAll(await _relationApi.searchByFollowing(user));
       } else {

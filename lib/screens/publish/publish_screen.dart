@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:h/components/container_background_component.dart';
@@ -26,6 +27,8 @@ class PublishScreen extends StatefulWidget {
 class _PublishScreenState extends State<PublishScreen> {
   Publication? commenting = Get.arguments['commenting'];
   Publication? sharing = Get.arguments['sharing'];
+
+  late RxString userSharingImgUrl = ''.obs;
 
   final textController = TextEditingController();
 
@@ -56,6 +59,14 @@ class _PublishScreenState extends State<PublishScreen> {
     focusNode = FocusNode();
 
     focusNode.addListener(onFocusChange);
+    getUrl();
+  }
+
+  void getUrl() async {
+    if (sharing != null && sharing!.user.userImage) {
+      userSharingImgUrl.value =
+          await downloadImages("USER/${sharing!.user.id}.jpeg");
+    }
   }
 
   void onFocusChange() {
@@ -225,6 +236,7 @@ class _PublishScreenState extends State<PublishScreen> {
                                         cursorColor: Colors.white,
                                         minLines: 2,
                                         maxLines: 5,
+                                        maxLength: 200,
                                       ),
                                     ),
                                   ],
@@ -279,12 +291,38 @@ class _PublishScreenState extends State<PublishScreen> {
                                               ClipRRect(
                                                 borderRadius:
                                                     BorderRadius.circular(50),
-                                                child:
-                                                    UserDefaultImageComponent(
-                                                  width: 30,
-                                                  height: 30,
-                                                  widthQuality: 78,
-                                                  heightQuality: 138,
+                                                child: Obx(
+                                                  () => !sharing!.user.userImage
+                                                      ? UserDefaultImageComponent(
+                                                          width: 30,
+                                                          height: 30,
+                                                          widthQuality: 78,
+                                                          heightQuality: 138,
+                                                        )
+                                                      : userSharingImgUrl
+                                                              .value.isEmpty
+                                                          ? Container(
+                                                              width: 30,
+                                                              height: 30,
+                                                              color: Theme.of(
+                                                                      context)
+                                                                  .colorScheme
+                                                                  .onSecondary,
+                                                            )
+                                                          : Image(
+                                                              width: 30,
+                                                              height: 30,
+                                                              fit: BoxFit.cover,
+                                                              image:
+                                                                  ResizeImage(
+                                                                CachedNetworkImageProvider(
+                                                                  userSharingImgUrl
+                                                                      .value,
+                                                                ),
+                                                                width: 78,
+                                                                height: 137,
+                                                              ),
+                                                            ),
                                                 ),
                                               ),
                                               SizedBox(width: 2.w),

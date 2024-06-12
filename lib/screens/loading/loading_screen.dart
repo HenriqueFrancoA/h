@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -31,7 +33,13 @@ class _LoadingScreenState extends State<LoadingScreen> {
     String password = prefs.getString("password") ?? '';
 
     if (saveAccess) {
-      _loginController.login(email, password, null).then((response) {
+      _loginController
+          .login(
+        email,
+        password,
+        context,
+      )
+          .then((response) {
         if (response) {
           Timer(
             const Duration(seconds: 2),

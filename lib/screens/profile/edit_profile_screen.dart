@@ -1,13 +1,14 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:h/components/circular_progress_component.dart';
-import 'package:h/components/container_background_component.dart';
-import 'package:h/components/user_default_image_component.dart';
 import 'package:sizer/sizer.dart';
 
+import 'package:h/components/circular_progress_component.dart';
+import 'package:h/components/container_background_component.dart';
 import 'package:h/components/textfield_component.dart';
+import 'package:h/components/user_default_image_component.dart';
 import 'package:h/controllers/login_controller.dart';
 import 'package:h/controllers/user_controller.dart';
 import 'package:h/utils/image_configs.dart';
@@ -307,12 +308,18 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         padding: const EdgeInsets.all(10.0),
                         child: Row(
                           children: [
-                            SizedBox(
-                              width: 35.w,
-                              child: Text(
-                                'Nome',
-                                style: Theme.of(context).textTheme.titleSmall,
-                              ),
+                            Column(
+                              children: [
+                                SizedBox(
+                                  width: 35.w,
+                                  child: Text(
+                                    'Nome',
+                                    style:
+                                        Theme.of(context).textTheme.titleSmall,
+                                  ),
+                                ),
+                                SizedBox(height: 3.h),
+                              ],
                             ),
                             SizedBox(
                               width: 65.w - 20,
@@ -384,12 +391,18 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            SizedBox(
-                              width: 35.w,
-                              child: Text(
-                                'Localização',
-                                style: Theme.of(context).textTheme.titleSmall,
-                              ),
+                            Column(
+                              children: [
+                                SizedBox(
+                                  width: 35.w,
+                                  child: Text(
+                                    'Localização',
+                                    style:
+                                        Theme.of(context).textTheme.titleSmall,
+                                  ),
+                                ),
+                                SizedBox(height: 3.h),
+                              ],
                             ),
                             SizedBox(
                               width: 65.w - 20,
@@ -397,6 +410,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                 controller: _localizationController,
                                 labelText: '',
                                 color: Colors.transparent,
+                                maxLength: 20,
                               ),
                             ),
                           ],

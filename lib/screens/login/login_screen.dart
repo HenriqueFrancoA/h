@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:h/components/circular_progress_component.dart';
@@ -19,10 +21,11 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _loginController = Get.put(LoginController());
 
-  final _userNameController = TextEditingController();
+  final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
   RxBool loading = RxBool(false);
+  RxBool validEmail = RxBool(true);
 
   @override
   Widget build(BuildContext context) {
@@ -63,10 +66,14 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                           SizedBox(height: 1.h),
-                          TextFieldComponent(
-                            controller: _userNameController,
-                            hintText: "E-mail, telefone ou usuário",
-                            width: 100.w,
+                          Obx(
+                            () => TextFieldComponent(
+                              controller: _emailController,
+                              hintText: "E-mail",
+                              width: 100.w,
+                              borderColor:
+                                  validEmail.isFalse ? Colors.red : null,
+                            ),
                           ),
                           SizedBox(height: 2.h),
                           TextFieldComponent(
@@ -76,17 +83,39 @@ class _LoginScreenState extends State<LoginScreen> {
                             obscureText: true,
                           ),
                           SizedBox(height: 1.h),
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: Text(
-                              'Esqueceu a senha?',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodySmall!
-                                  .copyWith(
-                                    color: Colors.grey[400],
-                                    fontSize: 11,
-                                  ),
+                          GestureDetector(
+                            onTap: () async {
+                              validEmail.value = true;
+                              if (_emailController.text.isNotEmpty &&
+                                  _emailController.text.contains('@')) {
+                                await _loginController.recoveryPassword(
+                                  _emailController.text,
+                                  context,
+                                );
+                                NotificationSnackbar.showSuccess(
+                                  context,
+                                  'Verifique o E-mail informado para continuar com a recuperação.',
+                                );
+                              } else {
+                                NotificationSnackbar.showError(
+                                  context,
+                                  'Insira um E-mail válido para recuperar a senha.',
+                                );
+                                validEmail.value = false;
+                              }
+                            },
+                            child: Align(
+                              alignment: Alignment.centerRight,
+                              child: Text(
+                                'Esqueceu a senha?',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall!
+                                    .copyWith(
+                                      color: Colors.grey[400],
+                                      fontSize: 11,
+                                    ),
+                              ),
                             ),
                           ),
                           SizedBox(height: 2.h),
@@ -96,17 +125,20 @@ class _LoginScreenState extends State<LoginScreen> {
                             child: CustomButtonComponent(
                               onPressed: () async {
                                 loading.value = true;
-                                if (_userNameController.text == '' ||
+                                validEmail.value = true;
+                                if (_emailController.text == '' ||
                                     _passwordController.text == '') {
-                                  NotificationSnackbar.showError(context,
-                                      'Email e/ou senha não preenchidos.');
+                                  NotificationSnackbar.showError(
+                                    context,
+                                    'Email e/ou senha não preenchidos.',
+                                  );
                                   loading.value = false;
                                   return;
                                 }
 
                                 await _loginController
                                     .login(
-                                  _userNameController.text,
+                                  _emailController.text,
                                   _passwordController.text,
                                   context,
                                 )

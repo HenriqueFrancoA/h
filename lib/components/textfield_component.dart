@@ -6,6 +6,7 @@ class TextFieldComponent extends StatelessWidget {
   final TextEditingController? controller;
   final double? width;
   final bool? obscureText;
+  final Color? borderColor;
   final Color? color;
   final int? maxLength;
   final FocusNode? focusNode;
@@ -22,6 +23,7 @@ class TextFieldComponent extends StatelessWidget {
     this.focusNode,
     this.hintText,
     this.onSubmitted,
+    this.borderColor,
   });
 
   @override
@@ -31,6 +33,11 @@ class TextFieldComponent extends StatelessWidget {
       decoration: BoxDecoration(
         color: color ?? Theme.of(context).colorScheme.onSecondary,
         borderRadius: BorderRadius.circular(5),
+        border: borderColor != null
+            ? Border.all(
+                color: borderColor!,
+              )
+            : null,
       ),
       child: TextField(
         focusNode: focusNode,
