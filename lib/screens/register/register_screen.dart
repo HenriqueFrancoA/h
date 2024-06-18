@@ -30,6 +30,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
+  RxBool obscurePasswordText = RxBool(true);
+  RxBool obscureConfirmPasswordText = RxBool(true);
+
   void _launchPrivacyPolicy() async {
     const url = 'https://www.iubenda.com/privacy-policy/20491208';
     await launchUrlString(url);
@@ -165,18 +168,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
                       ),
                       SizedBox(height: 2.h),
-                      TextFieldComponent(
-                        controller: _passwordController,
-                        labelText: "senha *",
-                        width: 100.w,
-                        obscureText: true,
+                      Obx(
+                        () => TextFieldComponent(
+                          controller: _passwordController,
+                          labelText: "senha *",
+                          width: 100.w,
+                          obscureText: obscurePasswordText.value,
+                          tapObscure: () => obscurePasswordText.value =
+                              !obscurePasswordText.value,
+                        ),
                       ),
                       SizedBox(height: 2.h),
-                      TextFieldComponent(
-                        controller: _confirmPasswordController,
-                        labelText: "confirme a senha *",
-                        width: 100.w,
-                        obscureText: true,
+                      Obx(
+                        () => TextFieldComponent(
+                          controller: _confirmPasswordController,
+                          labelText: "confirme a senha *",
+                          width: 100.w,
+                          obscureText: obscureConfirmPasswordText.value,
+                          tapObscure: () => obscureConfirmPasswordText.value =
+                              !obscureConfirmPasswordText.value,
+                        ),
                       ),
                       SizedBox(height: 2.h),
                       Row(

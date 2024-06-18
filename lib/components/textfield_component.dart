@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class TextFieldComponent extends StatelessWidget {
@@ -11,6 +12,7 @@ class TextFieldComponent extends StatelessWidget {
   final int? maxLength;
   final FocusNode? focusNode;
   final Function(String)? onSubmitted;
+  final VoidCallback? tapObscure;
 
   const TextFieldComponent({
     super.key,
@@ -24,6 +26,7 @@ class TextFieldComponent extends StatelessWidget {
     this.hintText,
     this.onSubmitted,
     this.borderColor,
+    this.tapObscure,
   });
 
   @override
@@ -55,6 +58,17 @@ class TextFieldComponent extends StatelessWidget {
           hintStyle: Theme.of(context).textTheme.labelMedium!.copyWith(
                 color: Colors.grey,
               ),
+          suffixIcon: obscureText != null
+              ? GestureDetector(
+                  onTap: tapObscure,
+                  child: Icon(
+                    obscureText!
+                        ? CupertinoIcons.eye_slash_fill
+                        : CupertinoIcons.eye_fill,
+                    color: Colors.white,
+                  ),
+                )
+              : null,
         ),
         textAlignVertical: TextAlignVertical.center,
         controller: controller,

@@ -99,7 +99,11 @@ class _SearchScreenState extends State<SearchScreen> {
                     children: [
                       SizedBox(height: searched.isTrue ? 15.h : 10.h),
                       SizedBox(
-                        height: searched.isTrue ? 85.h - 80 : 90.h - 80,
+                        height: keyboardOpen.isTrue
+                            ? 60.h - 80
+                            : searched.isTrue
+                                ? 85.h - 80
+                                : 90.h - 80,
                         width: 100.w,
                         child: ListView.separated(
                           controller: scrollController,
@@ -157,10 +161,10 @@ class _SearchScreenState extends State<SearchScreen> {
                           loading.value = false;
                         },
                         onTapCancel: () {
-                          _textController.clear();
                           _textFieldFocus.unfocus();
+                          _textController.clear();
                           searched.value = false;
-                          searchedUser.value = false;
+                          searchedUser.value = true;
                         },
                         searched: searched.value,
                       ),
@@ -262,9 +266,13 @@ class _SearchScreenState extends State<SearchScreen> {
                     ),
                   ],
                 ),
-                BottomBarComponent(
-                  showBar: showBar,
-                  index: 1,
+                Obx(
+                  () => keyboardOpen.isTrue
+                      ? Container()
+                      : BottomBarComponent(
+                          showBar: showBar,
+                          index: 1,
+                        ),
                 ),
                 CircularProgressComponent(loading: loading),
               ],

@@ -74,7 +74,7 @@ class UserApi implements Api {
           .collection("USER")
           .where("DISABLED", isEqualTo: false)
           .orderBy("FOLLOWERS", descending: true)
-          .startAfter([user.followers])
+          .startAfter([user.followers.value])
           .limit(pageSize)
           .get();
     } else {

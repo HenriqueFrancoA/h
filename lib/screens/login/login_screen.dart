@@ -26,6 +26,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   RxBool loading = RxBool(false);
   RxBool validEmail = RxBool(true);
+  RxBool obscureText = RxBool(true);
 
   @override
   Widget build(BuildContext context) {
@@ -76,11 +77,16 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                           SizedBox(height: 2.h),
-                          TextFieldComponent(
-                            controller: _passwordController,
-                            labelText: "Senha",
-                            width: 100.w,
-                            obscureText: true,
+                          Obx(
+                            () => TextFieldComponent(
+                              controller: _passwordController,
+                              labelText: "Senha",
+                              width: 100.w,
+                              obscureText: obscureText.value,
+                              tapObscure: () {
+                                obscureText.value = !obscureText.value;
+                              },
+                            ),
                           ),
                           SizedBox(height: 1.h),
                           GestureDetector(
