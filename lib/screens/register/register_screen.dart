@@ -212,17 +212,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                     ),
                                 children: [
                                   const TextSpan(
-                                    text: "Li e Concordo com os ",
-                                  ),
-                                  TextSpan(
-                                    text: "termos ",
-                                    style:
-                                        Theme.of(context).textTheme.labelMedium,
-                                    recognizer: TapGestureRecognizer()
-                                      ..onTap = _launchTerms,
-                                  ),
-                                  const TextSpan(
-                                    text: "e ",
+                                    text: "Veja as ",
                                   ),
                                   TextSpan(
                                     text: "políticas de privacidade.",
